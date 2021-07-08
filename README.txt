@@ -13,7 +13,7 @@ Guideline notes below:
 
 • All functionality is in the main activity as guidelines mention.
 
-• Recycler view is used is requested.
+• Recycler view is used as requested.
 
 • Each image is contained within its own ViewHolder with additional information describing
 the image (a minimum of title, author, and date) is displayed.
