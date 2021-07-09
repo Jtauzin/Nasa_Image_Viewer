@@ -6,10 +6,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.Loader
@@ -56,16 +53,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
         urlList.add("https://images-api.nasa.gov/search?q=neptune&media_type=image")
         urlList.add("https://images-api.nasa.gov/search?q=pluto&media_type=image")
 
-        // create connectivity check
-        var appHasConnectivity = hasConnectivity()
-
-        // if connected load items, else display connection error message
-        if (appHasConnectivity != null && appHasConnectivity == true) {
-            mLoaderManager = LoaderManager.getInstance(this)
-            mLoaderManager.initLoader(loaderID, null, this)
-        } else {
-            errorView.visibility = View.VISIBLE
-        }
+        startLoader()
 
         imageRecyclerView = findViewById(R.id.recycle_view)
         imageRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -87,7 +75,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     }
 
     //--------------------------------------------------------------------------------------------//
-    /* begin our override methods here*/
+    /* begin our loader override methods here*/
     //--------------------------------------------------------------------------------------------//
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<ArrayList<ImageObj>> {
@@ -218,5 +206,32 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
             errorView.visibility = View.VISIBLE
             imageRecyclerView.visibility = View.INVISIBLE
         }
+    }
+
+    private fun startLoader(){
+        // create connectivity check
+        val appHasConnectivity = hasConnectivity()
+        mLoaderManager = LoaderManager.getInstance(this)
+        if (appHasConnectivity != null && appHasConnectivity == true) {
+            // if connected load items, else display connection error message
+            mLoaderManager.initLoader(loaderID, null, this)
+        } else {
+            errorView.visibility = View.VISIBLE
+        }
+    }
+
+    //--------------------------------------------------------------------------------------------//
+    /* Lifecycle overrides here*/
+    //--------------------------------------------------------------------------------------------//
+
+    override fun onResume() {
+        startLoader()
+        super.onResume()
+    }
+
+    override fun onPause() {
+        // need to destroy loader when minimized to prevent crashes if the user comes back to the app.
+        mLoaderManager.destroyLoader(loaderID)
+        super.onPause()
     }
 }
