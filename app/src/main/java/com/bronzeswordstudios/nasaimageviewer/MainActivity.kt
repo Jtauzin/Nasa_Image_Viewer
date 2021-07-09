@@ -230,8 +230,14 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     }
 
     override fun onPause() {
-        // need to destroy loader when minimized to prevent crashes if the user comes back to the app.
+        // need to destroy loader when minimized to prevent crashes
+        // if the user comes back to the app and has lost connection after
+        // minimization.
         mLoaderManager.destroyLoader(loaderID)
+        // save position for when user returns (it adds one on return)
+        if (index > 0){
+            index -= 1
+        }
         super.onPause()
     }
 }
