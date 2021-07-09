@@ -95,7 +95,7 @@ class Query {
                     imageObjs.add(ImageObj(url, title, center, date, backupURL))
                     i++
                 }
-            } catch (e: JSONException) {
+            } catch (e: java.lang.Exception) {
                 Log.e("JSON Error", "extractFromJson: $e")
             }
             return imageObjs

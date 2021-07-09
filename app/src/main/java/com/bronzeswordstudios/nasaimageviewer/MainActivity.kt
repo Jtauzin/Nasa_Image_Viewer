@@ -22,11 +22,16 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     private lateinit var errorView: TextView
     private lateinit var searchPopUp: LinearLayout
     private lateinit var searchInput: EditText
+    private lateinit var imageAdapter: ImageAdapter
     private var isSearch: Boolean = false
     private var searchUrl: String = ""
     private var urlList: ArrayList<String> = ArrayList()
     private var index: Int = 0
     private val loaderID = 0
+
+    companion object{
+        var imageList = ArrayList<ImageObj>()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,10 +58,19 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
         urlList.add("https://images-api.nasa.gov/search?q=neptune&media_type=image")
         urlList.add("https://images-api.nasa.gov/search?q=pluto&media_type=image")
 
-        startLoader()
-
         imageRecyclerView = findViewById(R.id.recycle_view)
         imageRecyclerView.layoutManager = LinearLayoutManager(this)
+        if (imageList.isEmpty()){
+            startLoader()
+        }
+        else{
+            // for screen rotation, on create is called again so we set the adapter to the
+            // prev. values
+            imageAdapter = ImageAdapter(imageList, this)
+            imageRecyclerView.adapter = imageAdapter
+            imageRecyclerView.visibility = View.VISIBLE
+        }
+
 
         // set refresh layout logic
         val layoutRefresher: SwipeRefreshLayout = findViewById(R.id.swipe_refresh)
@@ -66,6 +80,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
             restartLoader()
             layoutRefresher.isRefreshing = false
         }
+
         // handle search submission
         submitSearch.setOnClickListener {
             searchPopUp.visibility = View.GONE
@@ -87,13 +102,17 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     override fun onLoadFinished(loader: Loader<ArrayList<ImageObj>>, data: ArrayList<ImageObj>?) {
         // if we have data to show, set the adapters and away we go!
         if (data != null) {
-            if (data.size == 0) {
+            if (data.size == 0 && imageList.size == 0) {
                 imageRecyclerView.visibility = View.INVISIBLE
                 errorView.text = resources.getString(R.string.no_results)
                 errorView.visibility = View.VISIBLE
             } else {
-                val imageAdapter = ImageAdapter(data, this)
-                imageRecyclerView.adapter = imageAdapter
+                // if we have new data update the loader. Otherwise set the views.
+                if (data.size > 0){
+                    imageList = data
+                    imageAdapter = ImageAdapter(imageList, this)
+                    imageRecyclerView.adapter = imageAdapter
+                }
                 imageRecyclerView.visibility = View.VISIBLE
                 errorView.visibility = View.INVISIBLE
             }
@@ -225,19 +244,10 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     //--------------------------------------------------------------------------------------------//
 
     override fun onResume() {
-        startLoader()
         super.onResume()
     }
 
     override fun onPause() {
-        // need to destroy loader when minimized to prevent crashes
-        // if the user comes back to the app and has lost connection after
-        // minimization.
-        mLoaderManager.destroyLoader(loaderID)
-        // save position for when user returns (it adds one on return)
-        if (index > 0){
-            index -= 1
-        }
         super.onPause()
     }
 }
