@@ -2,9 +2,10 @@
     <string name="app_name">Nasa Image Viewer</string>
     <string name="no_connection_text">Oh no! Connectivity unavailable. Please move to a better location or connect to wifi</string>
     <string name="image_content_desc">image to be loaded</string>
-    <string name="search">search</string>
+    <string name="search">Search</string>
     <string name="search_hint">What would you like to search for?</string>
-    <string name="submit">submit</string>
+    <string name="submit">Submit</string>
+    <string name="cancel">Cancel</string>
     <string name="no_results">Sorry! There are no results available!</string>
     <string name="title">Title: </string>
     <string name="author">Center(Author/Owner): </string>

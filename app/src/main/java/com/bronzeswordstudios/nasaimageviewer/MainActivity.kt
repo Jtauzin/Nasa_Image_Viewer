@@ -6,7 +6,9 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.*
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.Loader
@@ -14,7 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
-class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayList<ImageObj>> {
+class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayList<ImageObj>>,
+    SearchFragment.SearchDialogListener {
 
     // set up globals
     private lateinit var mLoaderManager: LoaderManager
@@ -28,17 +31,14 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     private var urlList: ArrayList<String> = ArrayList()
     private val loaderID = 0
 
-    companion object{
+    companion object {
         var imageList = ArrayList<ImageObj>()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val submitSearch: Button = findViewById(R.id.submit_search)
-        searchPopUp = findViewById(R.id.search_popup)
         errorView = findViewById(R.id.error_view)
-        searchInput = findViewById(R.id.search_input)
         mLoaderManager = LoaderManager.getInstance(this)
 
         // create a list of potential urls to request for variety
@@ -60,10 +60,9 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 
         imageRecyclerView = findViewById(R.id.recycle_view)
         imageRecyclerView.layoutManager = LinearLayoutManager(this)
-        if (imageList.isEmpty()){
+        if (imageList.isEmpty()) {
             startLoader()
-        }
-        else{
+        } else {
             // for screen rotation, on create is called again so we set the adapter to the
             // prev. values
             imageAdapter = ImageAdapter(imageList, this)
@@ -79,13 +78,6 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
             // call restart loader and cease refreshing indicator
             restartLoader()
             layoutRefresher.isRefreshing = false
-        }
-
-        // handle search submission
-        submitSearch.setOnClickListener {
-            searchPopUp.visibility = View.GONE
-            performSearch(searchInput.text.toString())
-            searchInput.setText("")
         }
     }
 
@@ -108,7 +100,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
                 errorView.visibility = View.VISIBLE
             } else {
                 // if we have new data update the loader. Otherwise set the views.
-                if (data.size > 0){
+                if (data.size > 0) {
                     imageList = data
                     imageAdapter = ImageAdapter(imageList, this)
                     imageRecyclerView.adapter = imageAdapter
@@ -134,13 +126,19 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.search -> {
-                val searchPopUp: LinearLayout = findViewById(R.id.search_popup)
-                searchPopUp.visibility = View.VISIBLE
+                // display our dialog box
+                displaySearch()
 
             }
         }
         return true
     }
+
+    // for our search dialog pop up
+    override fun onDialogPositiveClick(dialog: SearchFragment) {
+        performSearch(dialog.getString())
+    }
+
 
     //--------------------------------------------------------------------------------------------//
     /* begin our custom methods here*/
@@ -227,7 +225,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
         }
     }
 
-    private fun startLoader(){
+    private fun startLoader() {
         // create connectivity check
         val appHasConnectivity = hasConnectivity()
         if (appHasConnectivity != null && appHasConnectivity == true) {
@@ -238,15 +236,9 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
         }
     }
 
-    //--------------------------------------------------------------------------------------------//
-    /* Lifecycle overrides here*/
-    //--------------------------------------------------------------------------------------------//
-
-    override fun onResume() {
-        super.onResume()
+    private fun displaySearch() {
+        val searchDialog = SearchFragment()
+        searchDialog.show(supportFragmentManager, "search")
     }
 
-    override fun onPause() {
-        super.onPause()
-    }
 }

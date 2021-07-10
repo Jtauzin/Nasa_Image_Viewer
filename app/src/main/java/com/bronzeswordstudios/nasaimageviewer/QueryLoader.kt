@@ -14,6 +14,6 @@ class QueryLoader(context: Context, private val url: String) :
 
     override fun onStartLoading() {
         // if we forget to force load here, we are going to have a bad time. Ask me how I know!
-            forceLoad()
+        forceLoad()
     }
 }
