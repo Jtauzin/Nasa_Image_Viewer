@@ -26,7 +26,6 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     private var isSearch: Boolean = false
     private var searchUrl: String = ""
     private var urlList: ArrayList<String> = ArrayList()
-    private var index: Int = 0
     private val loaderID = 0
 
     companion object{
@@ -40,6 +39,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
         searchPopUp = findViewById(R.id.search_popup)
         errorView = findViewById(R.id.error_view)
         searchInput = findViewById(R.id.search_input)
+        mLoaderManager = LoaderManager.getInstance(this)
 
         // create a list of potential urls to request for variety
         urlList.add("https://images-api.nasa.gov/search?q=galaxy&media_type=image")
@@ -192,12 +192,12 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
             searchUrl
         } else {
             // here we adjust our URL from our selections
-            if (index >= urlList.size) {
+            if (DataHolder.index >= urlList.size) {
                 // if our index exceeds our list length reset
-                index = 0
+                DataHolder.index = 0
             }
-            val urlToReturn = urlList[index]
-            index += 1
+            val urlToReturn = urlList[DataHolder.index]
+            DataHolder.index += 1
             urlToReturn
         }
     }
@@ -230,7 +230,6 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     private fun startLoader(){
         // create connectivity check
         val appHasConnectivity = hasConnectivity()
-        mLoaderManager = LoaderManager.getInstance(this)
         if (appHasConnectivity != null && appHasConnectivity == true) {
             // if connected load items, else display connection error message
             mLoaderManager.initLoader(loaderID, null, this)
