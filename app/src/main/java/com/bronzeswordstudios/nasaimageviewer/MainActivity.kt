@@ -9,15 +9,18 @@ import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.Loader
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayList<ImageObj>>,
-    SearchFragment.SearchDialogListener {
+        SearchFragment.SearchDialogListener {
 
     // set up globals
     private lateinit var mLoaderManager: LoaderManager
@@ -27,6 +30,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     private lateinit var searchInput: EditText
     private lateinit var imageAdapter: ImageAdapter
     private var isSearch: Boolean = false
+    private var isPaused: Boolean = false
     private var searchUrl: String = ""
     private var urlList: ArrayList<String> = ArrayList()
     private val loaderID = 0
@@ -60,9 +64,15 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 
         imageRecyclerView = findViewById(R.id.recycle_view)
         imageRecyclerView.layoutManager = LinearLayoutManager(this)
-        if (imageList.isEmpty()) {
+        if (imageList.size == 0) {
             startLoader()
-        } else {
+        }
+        else if(!hasConnectivity()){
+            // check connectivity in case of rotation, we need to update screen if connection was lost
+            errorView.text = resources.getString(R.string.no_connection_text)
+            errorView.visibility = View.VISIBLE
+        }
+            else {
             // for screen rotation, on create is called again so we set the adapter to the
             // prev. values
             imageAdapter = ImageAdapter(imageList, this)
@@ -94,16 +104,28 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     override fun onLoadFinished(loader: Loader<ArrayList<ImageObj>>, data: ArrayList<ImageObj>?) {
         // if we have data to show, set the adapters and away we go!
         if (data != null) {
-            if (data.size == 0 && imageList.size == 0) {
-                imageRecyclerView.visibility = View.INVISIBLE
-                errorView.text = resources.getString(R.string.no_results)
-                errorView.visibility = View.VISIBLE
+            if (data.size == 0 && imageList.size != 0) {
+                // the boolean above means the next data pull was not successful
+                // (either search or refresh)
+                val coordinatorLayout: CoordinatorLayout = findViewById(R.id.coordinator_layout)
+                val snackbar = Snackbar.make(coordinatorLayout, R.string.no_results, Snackbar.LENGTH_LONG)
+
+                //add a dismiss option on the popup here
+                snackbar.setAction(R.string.dismiss) {
+                    snackbar.dismiss()
+                }
+
+                snackbar.show()
             } else {
-                // if we have new data update the loader. Otherwise set the views.
-                if (data.size > 0) {
+                // if went to onPause, we do not need to reload data
+                if (!isPaused) {
                     imageList = data
                     imageAdapter = ImageAdapter(imageList, this)
                     imageRecyclerView.adapter = imageAdapter
+                }
+                else{
+                    // if returning from onPause, reset value
+                    isPaused = false
                 }
                 imageRecyclerView.visibility = View.VISIBLE
                 errorView.visibility = View.INVISIBLE
@@ -201,13 +223,17 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     }
 
 
-    private fun hasConnectivity(): Boolean? {
-        // check to see if we have connectivity. Returns true, false, or null
+    private fun hasConnectivity(): Boolean {
+        // check to see if we have connectivity. Returns true or false
         val connectivityManager = getSystemService(ConnectivityManager::class.java)
         val activeNetwork = connectivityManager.activeNetwork
         val capabilities: NetworkCapabilities? =
-            connectivityManager.getNetworkCapabilities(activeNetwork)
-        return capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+                connectivityManager.getNetworkCapabilities(activeNetwork)
+        var returnBoolean: Boolean? = capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+        if (returnBoolean == null){
+            returnBoolean = false
+        }
+        return returnBoolean
     }
 
     private fun restartLoader() {
@@ -227,8 +253,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 
     private fun startLoader() {
         // create connectivity check
-        val appHasConnectivity = hasConnectivity()
-        if (appHasConnectivity != null && appHasConnectivity == true) {
+        if (hasConnectivity()) {
             // if connected load items, else display connection error message
             mLoaderManager.initLoader(loaderID, null, this)
         } else {
@@ -239,6 +264,15 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     private fun displaySearch() {
         val searchDialog = SearchFragment()
         searchDialog.show(supportFragmentManager, "search")
+    }
+
+    //--------------------------------------------------------------------------------------------//
+    /* lifecycle overrides here*/
+    //--------------------------------------------------------------------------------------------//
+
+    override fun onPause() {
+        isPaused = true
+        super.onPause()
     }
 
 }

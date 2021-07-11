@@ -10,4 +10,5 @@
     <string name="title">Title: </string>
     <string name="author">Center(Author/Owner): </string>
     <string name="date">Date: </string>
+    <string name="dismiss">Dismiss</string>
 </resources>
