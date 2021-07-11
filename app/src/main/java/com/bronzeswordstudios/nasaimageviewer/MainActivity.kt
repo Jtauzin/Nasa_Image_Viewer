@@ -3,11 +3,11 @@ package com.bronzeswordstudios.nasaimageviewer
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.EditText
-import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -26,14 +26,14 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     private lateinit var mLoaderManager: LoaderManager
     private lateinit var imageRecyclerView: RecyclerView
     private lateinit var errorView: TextView
-    private lateinit var searchPopUp: LinearLayout
-    private lateinit var searchInput: EditText
     private lateinit var imageAdapter: ImageAdapter
+    private lateinit var primaryProgressBar: ProgressBar
     private var isSearch: Boolean = false
     private var isPaused: Boolean = false
     private var searchUrl: String = ""
     private var urlList: ArrayList<String> = ArrayList()
     private val loaderID = 0
+    private var index = 0
 
     companion object {
         var imageList = ArrayList<ImageObj>()
@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        primaryProgressBar = findViewById(R.id.primary_progress_bar)
         errorView = findViewById(R.id.error_view)
         mLoaderManager = LoaderManager.getInstance(this)
 
@@ -66,17 +67,17 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
         imageRecyclerView.layoutManager = LinearLayoutManager(this)
         if (imageList.size == 0) {
             startLoader()
-        }
-        else if(!hasConnectivity()){
+        } else if (!hasConnectivity()) {
             // check connectivity in case of rotation, we need to update screen if connection was lost
             errorView.text = resources.getString(R.string.no_connection_text)
             errorView.visibility = View.VISIBLE
-        }
-            else {
+            primaryProgressBar.visibility = View.INVISIBLE
+        } else {
             // for screen rotation, on create is called again so we set the adapter to the
             // prev. values
             imageAdapter = ImageAdapter(imageList, this)
             imageRecyclerView.adapter = imageAdapter
+            primaryProgressBar.visibility = View.INVISIBLE
             imageRecyclerView.visibility = View.VISIBLE
         }
 
@@ -122,13 +123,13 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
                     imageList = data
                     imageAdapter = ImageAdapter(imageList, this)
                     imageRecyclerView.adapter = imageAdapter
-                }
-                else{
+                } else {
                     // if returning from onPause, reset value
                     isPaused = false
                 }
                 imageRecyclerView.visibility = View.VISIBLE
                 errorView.visibility = View.INVISIBLE
+                primaryProgressBar.visibility = View.INVISIBLE
             }
         }
     }
@@ -212,12 +213,12 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
             searchUrl
         } else {
             // here we adjust our URL from our selections
-            if (DataHolder.index >= urlList.size) {
+            if (index >= urlList.size) {
                 // if our index exceeds our list length reset
-                DataHolder.index = 0
+                index = 0
             }
-            val urlToReturn = urlList[DataHolder.index]
-            DataHolder.index += 1
+            val urlToReturn = urlList[index]
+            index += 1
             urlToReturn
         }
     }
@@ -230,7 +231,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
         val capabilities: NetworkCapabilities? =
                 connectivityManager.getNetworkCapabilities(activeNetwork)
         var returnBoolean: Boolean? = capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-        if (returnBoolean == null){
+        if (returnBoolean == null) {
             returnBoolean = false
         }
         return returnBoolean
@@ -239,8 +240,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     private fun restartLoader() {
         // handles loader reset logic:
         // UI updates, loader reset, and connectivity check for a loader restart
-        val appHasConnectivity: Boolean? = hasConnectivity()
-        if (appHasConnectivity != null && appHasConnectivity == true) {
+        if (hasConnectivity()) {
             mLoaderManager.restartLoader(loaderID, null, this)
             errorView.visibility = View.INVISIBLE
             imageRecyclerView.visibility = View.VISIBLE
@@ -258,6 +258,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
             mLoaderManager.initLoader(loaderID, null, this)
         } else {
             errorView.visibility = View.VISIBLE
+            primaryProgressBar.visibility = View.INVISIBLE
         }
     }
 
@@ -274,5 +275,15 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
         isPaused = true
         super.onPause()
     }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt("index", index)
+        super.onSaveInstanceState(outState)
+    }
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        index = savedInstanceState.getInt("index")
+    }
+
 
 }
