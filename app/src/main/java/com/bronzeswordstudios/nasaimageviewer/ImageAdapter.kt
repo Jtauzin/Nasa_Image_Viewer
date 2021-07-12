@@ -15,10 +15,13 @@ import java.io.InputStream
 import java.net.URL
 
 class ImageAdapter(private val imageList: ArrayList<ImageObj>, private val activity: Activity) :
-    RecyclerView.Adapter<ImageAdapter.ViewHolder>() {
+        RecyclerView.Adapter<ImageAdapter.ViewHolder>() {
 
     lateinit var context: Context
     lateinit var parentView: View
+
+    // this list is to store our drawables once loaded
+    private var drawableList: Array<Drawable?> = arrayOfNulls(imageList.size)
 
     class ViewHolder(adapterView: View) : RecyclerView.ViewHolder(adapterView) {
         // define a custom ViewHolder class since we have custom needs
@@ -55,15 +58,15 @@ class ImageAdapter(private val imageList: ArrayList<ImageObj>, private val activ
         val authorView: TextView = holder.authorView
         val imageObj: ImageObj = imageList[position]
         val titleText: String =
-            context.resources.getString(R.string.title) + " " + imageObj.getTitle()
+                context.resources.getString(R.string.title) + " " + imageObj.getTitle()
         val authorText: String =
-            context.resources.getString(R.string.author) + " " + imageObj.getCenter()
+                context.resources.getString(R.string.author) + " " + imageObj.getCenter()
         val dateText: String =
-            context.resources.getString(R.string.date) + " " + extractDate(imageObj.getDate())
+                context.resources.getString(R.string.date) + " " + extractDate(imageObj.getDate())
         titleView.text = titleText
         dateView.text = dateText
         authorView.text = authorText
-        loadImage(holder, imageObj.getURL(), imageObj.getBackupURL())
+        loadImage(holder, imageObj.getURL(), imageObj.getBackupURL(), position)
     }
 
 
@@ -83,32 +86,46 @@ class ImageAdapter(private val imageList: ArrayList<ImageObj>, private val activ
     /* begin our private functions here*/
     //--------------------------------------------------------------------------------------------//
 
-    private fun loadImage(holder: ViewHolder, url: String, backupURL: String) {
+    private fun loadImage(holder: ViewHolder, url: String, backupURL: String, position: Int) {
         // set up loading display
         holder.nasaImage.visibility = View.INVISIBLE
         holder.spinningLoader.visibility = View.VISIBLE
-        // load image from URL in background. Display when loaded.
-        Thread(Runnable {
-            val drawable: Drawable? = try {
-                val input: InputStream = URL(url).content as InputStream
-                Drawable.createFromStream(input, url)
-            } catch (e: Exception) {
-                try {
-                    // if no higher res picture is available, return the low res picture
-                    val input: InputStream = URL(backupURL).content as InputStream
-                    Drawable.createFromStream(input, backupURL)
+        var drawable: Drawable?
+
+        // check if we need to load the drawable or pull from list
+        if (drawableList.getOrNull(position) == null) {
+            Thread(Runnable {
+                drawable = try {
+                    val input: InputStream = URL(url).content as InputStream
+                    Drawable.createFromStream(input, url)
                 } catch (e: Exception) {
-                    // if there is no high res JPG or backup picture, display error picture
-                    AppCompatResources.getDrawable(context, R.drawable.image_error)
+                    try {
+                        // if no higher res picture is available, return the low res picture
+                        val input: InputStream = URL(backupURL).content as InputStream
+                        Drawable.createFromStream(input, backupURL)
+                    } catch (e: Exception) {
+                        // if there is no high res JPG or backup picture, display error picture
+                        AppCompatResources.getDrawable(context, R.drawable.image_error)
+                    }
                 }
-            }
-            activity.runOnUiThread {
-                // set UI via UI thread
-                holder.nasaImage.setImageDrawable(drawable)
-                holder.nasaImage.visibility = View.VISIBLE
-                holder.spinningLoader.visibility = View.INVISIBLE
-            }
-        }).start()
+                // save drawable to list so we do not have to load again
+                drawableList[position] = drawable
+                activity.runOnUiThread {
+                    // set UI via UI thread
+                    holder.nasaImage.setImageDrawable(drawable)
+                    holder.nasaImage.visibility = View.VISIBLE
+                    holder.spinningLoader.visibility = View.INVISIBLE
+                }
+            }).start()
+        } else {
+            // display saved image if we have one
+            drawable = drawableList[position]
+            holder.nasaImage.setImageDrawable(drawable)
+            holder.nasaImage.visibility = View.VISIBLE
+            holder.spinningLoader.visibility = View.INVISIBLE
+        }
+
+
     }
 
     private fun extractDate(rawString: String?): String? {

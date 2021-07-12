@@ -23,8 +23,8 @@ class SearchFragment : DialogFragment() {
         } catch (e: ClassCastException) {
             // The activity must implement the interface or throw an error
             throw ClassCastException(
-                (context.toString() +
-                        " must implement NoticeDialogListener")
+                    (context.toString() +
+                            " must implement NoticeDialogListener")
             )
         }
     }
@@ -40,17 +40,17 @@ class SearchFragment : DialogFragment() {
             // Inflate and set the layout for the dialog - from documentation
             // Pass null as the parent view because its going in the dialog layout - from documentation
             builder.setView(searchView)
-                // Add action buttons
-                .setPositiveButton(R.string.submit,
-                    DialogInterface.OnClickListener { dialog, id ->
-                        searchString = searchText.text.toString()
-                        // link the listener to the interface here
-                        listener.onDialogPositiveClick(this)
-                    })
-                .setNegativeButton(R.string.cancel,
-                    DialogInterface.OnClickListener { dialog, id ->
-                        getDialog()?.cancel()
-                    })
+                    // Add action buttons
+                    .setPositiveButton(R.string.submit,
+                            DialogInterface.OnClickListener { dialog, id ->
+                                searchString = searchText.text.toString()
+                                // link the listener to the interface here
+                                listener.onDialogPositiveClick(this)
+                            })
+                    .setNegativeButton(R.string.cancel,
+                            DialogInterface.OnClickListener { dialog, id ->
+                                getDialog()?.cancel()
+                            })
             builder.create()
         } ?: throw IllegalStateException("Activity cannot be null")
     }

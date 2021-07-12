@@ -5,7 +5,7 @@ import androidx.loader.content.AsyncTaskLoader
 
 
 class QueryLoader(context: Context, private val url: String) :
-    AsyncTaskLoader<ArrayList<ImageObj>>(context) {
+        AsyncTaskLoader<ArrayList<ImageObj>>(context) {
 
     // load our value on a background thread
     override fun loadInBackground(): ArrayList<ImageObj> {
