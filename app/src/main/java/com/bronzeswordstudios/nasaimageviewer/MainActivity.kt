@@ -3,18 +3,21 @@ package com.bronzeswordstudios.nasaimageviewer
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
-import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.Loader
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayList<ImageObj>>,
@@ -40,6 +43,11 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val appBar: MaterialToolbar = findViewById(R.id.app_bar)
+        val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
+        val navView: NavigationView = findViewById(R.id.nav_view)
+
         primaryProgressBar = findViewById(R.id.primary_progress_bar)
         errorView = findViewById(R.id.error_view)
         mLoaderManager = LoaderManager.getInstance(this)
@@ -87,6 +95,19 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
             // call restart loader and cease refreshing indicator
             restartLoader()
             layoutRefresher.isRefreshing = false
+        }
+
+        // handle nav drawer logic here
+        appBar.setNavigationOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        navView.setNavigationItemSelectedListener { menuItem ->
+            if (menuItem.itemId == R.id.search) {
+                displaySearch()
+            }
+            drawerLayout.closeDrawer(GravityCompat.START)
+            true
         }
     }
 
@@ -138,10 +159,10 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     }
 
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    /*override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu, menu)
         return true
-    }
+    }*/
 
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
