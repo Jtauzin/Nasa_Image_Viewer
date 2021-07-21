@@ -26,6 +26,8 @@ out! There is always room to grow :)
 • As a bonus and just for kicks, a search feature was implemented. It can be accessed via the drop
 down in the top right corner of the screen. The app just didn't feel right without a search.
 
+I have plans to utilize the NASA EPIC api in this as well. That implementation is pending
+
 
 With love,
 
