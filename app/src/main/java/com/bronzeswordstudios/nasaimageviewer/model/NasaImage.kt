@@ -1,5 +1,8 @@
 package com.bronzeswordstudios.nasaimageviewer.model
 
+import android.graphics.drawable.AdaptiveIconDrawable
+import android.graphics.drawable.Drawable
+
 class NasaImage(
     // our ImageObj class holds our information for each image to be displayed
     private val url: String?,
@@ -8,6 +11,9 @@ class NasaImage(
     private val date: String?,
     private val backupURL: String?
 ) {
+
+    // we will store each picture as it is loaded to avoid reloading images later.
+    private var image: Drawable? = null
 
 
     fun getDate(): String {
@@ -43,5 +49,13 @@ class NasaImage(
             return "center not available"
         }
         return center
+    }
+
+    fun getImage(): Drawable? {
+        return image
+    }
+
+    fun setImage(image: Drawable){
+        this.image = image
     }
 }

@@ -3,6 +3,7 @@ package com.bronzeswordstudios.nasaimageviewer.model
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.MenuItem
 import android.view.View
 import android.widget.ProgressBar
@@ -26,6 +27,10 @@ import com.google.android.material.snackbar.Snackbar
 class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayList<NasaImage>>,
     SearchFragment.SearchDialogListener {
 
+    /*TODO:
+        1. [x] Fix orientation changes (maintain current state of scrolling position and make sure you do not reload data just because).
+        2. [-] Any other bugs introduced while making the before requested changes.*/
+
     // set up globals
     private lateinit var mLoaderManager: LoaderManager
     private lateinit var imageRecyclerView: RecyclerView
@@ -39,6 +44,8 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     private val loaderID = 0
     private var index = 0
 
+    // Using this as a static object allows us to retain the values through a screen orientation
+    // change
     companion object {
         var imageList = ArrayList<NasaImage>()
     }
@@ -161,13 +168,6 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     override fun onLoaderReset(loader: Loader<ArrayList<NasaImage>>) {
         imageRecyclerView.adapter = null
     }
-
-
-    /*override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu, menu)
-        return true
-    }*/
-
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {

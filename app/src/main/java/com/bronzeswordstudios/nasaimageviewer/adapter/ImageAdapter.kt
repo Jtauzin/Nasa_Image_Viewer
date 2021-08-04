@@ -20,9 +20,6 @@ class ImageAdapter(private val nasaImageList: ArrayList<NasaImage>, private val 
     lateinit var context: Context
     lateinit var parentView: View
 
-    // this list is to store our drawables once loaded
-    private var drawableList: Array<Drawable?> = arrayOfNulls(nasaImageList.size)
-
     //--------------------------------------------------------------------------------------------//
     /* begin our override methods here*/
     //--------------------------------------------------------------------------------------------//
@@ -57,7 +54,17 @@ class ImageAdapter(private val nasaImageList: ArrayList<NasaImage>, private val 
         titleView.text = titleText
         dateView.text = dateText
         authorView.text = authorText
+
+        // load image if we do not already have one attached to our NasaImage object
+        if (nasaImageList[position].getImage() == null){
         loadImage(holder, nasaImage.getURL(), nasaImage.getBackupURL(), position)
+        }
+        else{
+            holder.nasaImage.setImageDrawable(nasaImageList[position].getImage())
+            holder.nasaImage.visibility = View.VISIBLE
+            holder.spinningLoader.visibility = View.INVISIBLE
+        }
+
     }
 
 
@@ -84,23 +91,22 @@ class ImageAdapter(private val nasaImageList: ArrayList<NasaImage>, private val 
         var drawable: Drawable?
 
         // check if we need to load the drawable or pull from list
-        if (drawableList.getOrNull(position) == null) {
             Thread(Runnable {
-                drawable = try {
+                try {
                     val input: InputStream = URL(url).content as InputStream
-                    Drawable.createFromStream(input, url)
+                    nasaImageList[position].setImage(Drawable.createFromStream(input, url))
+                    drawable = nasaImageList[position].getImage()
                 } catch (e: Exception) {
                     try {
                         // if no higher res picture is available, return the low res picture
                         val input: InputStream = URL(backupURL).content as InputStream
-                        Drawable.createFromStream(input, backupURL)
+                        nasaImageList[position].setImage(Drawable.createFromStream(input, backupURL))
+                        drawable = nasaImageList[position].getImage()
                     } catch (e: Exception) {
                         // if there is no high res JPG or backup picture, display error picture
-                        AppCompatResources.getDrawable(context, R.drawable.image_error)
+                        drawable = AppCompatResources.getDrawable(context, R.drawable.image_error)
                     }
                 }
-                // save drawable to list so we do not have to load again
-                drawableList[position] = drawable
                 activity.runOnUiThread {
                     // set UI via UI thread
                     holder.nasaImage.setImageDrawable(drawable)
@@ -108,15 +114,6 @@ class ImageAdapter(private val nasaImageList: ArrayList<NasaImage>, private val 
                     holder.spinningLoader.visibility = View.INVISIBLE
                 }
             }).start()
-        } else {
-            // display saved image if we have one
-            drawable = drawableList[position]
-            holder.nasaImage.setImageDrawable(drawable)
-            holder.nasaImage.visibility = View.VISIBLE
-            holder.spinningLoader.visibility = View.INVISIBLE
-        }
-
-
     }
 
     private fun extractDate(rawString: String?): String? {
