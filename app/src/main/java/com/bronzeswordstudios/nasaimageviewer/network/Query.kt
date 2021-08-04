@@ -1,6 +1,7 @@
-package com.bronzeswordstudios.nasaimageviewer
+package com.bronzeswordstudios.nasaimageviewer.network
 
 import android.util.Log
+import com.bronzeswordstudios.nasaimageviewer.model.ImageObj
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -76,10 +77,6 @@ class Query {
                     val currentObj: JSONObject = nasaJsonArray.getJSONObject(i)
                     val dataObj: JSONObject = currentObj.getJSONArray("data").getJSONObject(0)
                     val linkObj: JSONObject = currentObj.getJSONArray("links").getJSONObject(0)
-
-                    // if we wanted to go further down the JSON stream to get the images,
-                    // we would use this value to generate another stream via HTTPS request.
-                    val imageAddress: String? = currentObj.getString("href")
 
                     val title: String? = dataObj.getString("title")
                     val center: String? = dataObj.getString("center")

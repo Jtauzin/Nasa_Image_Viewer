@@ -1,4 +1,4 @@
-package com.bronzeswordstudios.nasaimageviewer
+package com.bronzeswordstudios.nasaimageviewer.model
 
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -16,12 +16,24 @@ import androidx.loader.content.Loader
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.bronzeswordstudios.nasaimageviewer.R
+import com.bronzeswordstudios.nasaimageviewer.adapter.ImageAdapter
+import com.bronzeswordstudios.nasaimageviewer.network.QueryLoader
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 
+/*TODO:
+    1. [x] Re-architecture package structure (there must be at least 3 packages: model, adapter, network).
+    2. [x] Factor out the ViewHolder class outside the adapter and move to the same "adapter" package.
+    3. [x] Enable orientation changes (do not restrict).
+    4. [x] For the dialog, use the standard Dialog Title view instead of setting the one of your layout (hint: this is not really that hard, justa  couple of methods).
+    5. [x] Clean build.gradle dependencies, remove unnecessary and update to latest stable versions.
+    6. [x] Delete unused methods on all code (commented out code and empty stub methods).
+    7. [x] Delete unused imports.*/
+
 class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayList<ImageObj>>,
-        SearchFragment.SearchDialogListener {
+    SearchFragment.SearchDialogListener {
 
     // set up globals
     private lateinit var mLoaderManager: LoaderManager
@@ -128,7 +140,8 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
                 // the boolean above means the next data pull was not successful
                 // (either search or refresh)
                 val coordinatorLayout: CoordinatorLayout = findViewById(R.id.coordinator_layout)
-                val snackbar = Snackbar.make(coordinatorLayout, R.string.no_results, Snackbar.LENGTH_LONG)
+                val snackbar =
+                    Snackbar.make(coordinatorLayout, R.string.no_results, Snackbar.LENGTH_LONG)
 
                 //add a dismiss option on the popup here
                 snackbar.setAction(R.string.dismiss) {
@@ -248,8 +261,9 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
         val connectivityManager = getSystemService(ConnectivityManager::class.java)
         val activeNetwork = connectivityManager.activeNetwork
         val capabilities: NetworkCapabilities? =
-                connectivityManager.getNetworkCapabilities(activeNetwork)
-        var returnBoolean: Boolean? = capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+            connectivityManager.getNetworkCapabilities(activeNetwork)
+        var returnBoolean: Boolean? =
+            capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
         if (returnBoolean == null) {
             returnBoolean = false
         }

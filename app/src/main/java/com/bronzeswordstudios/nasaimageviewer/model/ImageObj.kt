@@ -1,12 +1,12 @@
-package com.bronzeswordstudios.nasaimageviewer
+package com.bronzeswordstudios.nasaimageviewer.model
 
 class ImageObj(
-        // our ImageObj class holds our information for each image to be displayed
-        private val url: String?,
-        private val title: String?,
-        private val center: String?,
-        private val date: String?,
-        private val backupURL: String?
+    // our ImageObj class holds our information for each image to be displayed
+    private val url: String?,
+    private val title: String?,
+    private val center: String?,
+    private val date: String?,
+    private val backupURL: String?
 ) {
 
 

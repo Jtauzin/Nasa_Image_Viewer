@@ -1,4 +1,4 @@
-package com.bronzeswordstudios.nasaimageviewer
+package com.bronzeswordstudios.nasaimageviewer.adapter
 
 import android.app.Activity
 import android.content.Context
@@ -6,31 +6,22 @@ import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.RecyclerView
+import com.bronzeswordstudios.nasaimageviewer.R
+import com.bronzeswordstudios.nasaimageviewer.model.ImageObj
 import java.io.InputStream
 import java.net.URL
 
 class ImageAdapter(private val imageList: ArrayList<ImageObj>, private val activity: Activity) :
-        RecyclerView.Adapter<ImageAdapter.ViewHolder>() {
+    RecyclerView.Adapter<ViewHolder>() {
 
     lateinit var context: Context
     lateinit var parentView: View
 
     // this list is to store our drawables once loaded
     private var drawableList: Array<Drawable?> = arrayOfNulls(imageList.size)
-
-    class ViewHolder(adapterView: View) : RecyclerView.ViewHolder(adapterView) {
-        // define a custom ViewHolder class since we have custom needs
-        val titleView: TextView = adapterView.findViewById(R.id.title_view)
-        val dateView: TextView = adapterView.findViewById(R.id.date_view)
-        val nasaImage: ImageView = adapterView.findViewById(R.id.nasa_image)
-        val authorView: TextView = adapterView.findViewById(R.id.center_view)
-        val spinningLoader: ProgressBar = adapterView.findViewById(R.id.spinning_loader)
-    }
 
     //--------------------------------------------------------------------------------------------//
     /* begin our override methods here*/
@@ -58,11 +49,11 @@ class ImageAdapter(private val imageList: ArrayList<ImageObj>, private val activ
         val authorView: TextView = holder.authorView
         val imageObj: ImageObj = imageList[position]
         val titleText: String =
-                context.resources.getString(R.string.title) + " " + imageObj.getTitle()
+            context.resources.getString(R.string.title) + " " + imageObj.getTitle()
         val authorText: String =
-                context.resources.getString(R.string.author) + " " + imageObj.getCenter()
+            context.resources.getString(R.string.author) + " " + imageObj.getCenter()
         val dateText: String =
-                context.resources.getString(R.string.date) + " " + extractDate(imageObj.getDate())
+            context.resources.getString(R.string.date) + " " + extractDate(imageObj.getDate())
         titleView.text = titleText
         dateView.text = dateText
         authorView.text = authorText
