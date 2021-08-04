@@ -10,18 +10,18 @@ import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.RecyclerView
 import com.bronzeswordstudios.nasaimageviewer.R
-import com.bronzeswordstudios.nasaimageviewer.model.ImageObj
+import com.bronzeswordstudios.nasaimageviewer.model.NasaImage
 import java.io.InputStream
 import java.net.URL
 
-class ImageAdapter(private val imageList: ArrayList<ImageObj>, private val activity: Activity) :
+class ImageAdapter(private val nasaImageList: ArrayList<NasaImage>, private val activity: Activity) :
     RecyclerView.Adapter<ViewHolder>() {
 
     lateinit var context: Context
     lateinit var parentView: View
 
     // this list is to store our drawables once loaded
-    private var drawableList: Array<Drawable?> = arrayOfNulls(imageList.size)
+    private var drawableList: Array<Drawable?> = arrayOfNulls(nasaImageList.size)
 
     //--------------------------------------------------------------------------------------------//
     /* begin our override methods here*/
@@ -39,7 +39,7 @@ class ImageAdapter(private val imageList: ArrayList<ImageObj>, private val activ
 
     override fun getItemCount(): Int {
         // item count should equal the list size
-        return imageList.size
+        return nasaImageList.size
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -47,17 +47,17 @@ class ImageAdapter(private val imageList: ArrayList<ImageObj>, private val activ
         val titleView: TextView = holder.titleView
         val dateView: TextView = holder.dateView
         val authorView: TextView = holder.authorView
-        val imageObj: ImageObj = imageList[position]
+        val nasaImage: NasaImage = nasaImageList[position]
         val titleText: String =
-            context.resources.getString(R.string.title) + " " + imageObj.getTitle()
+            context.resources.getString(R.string.title) + " " + nasaImage.getTitle()
         val authorText: String =
-            context.resources.getString(R.string.author) + " " + imageObj.getCenter()
+            context.resources.getString(R.string.author) + " " + nasaImage.getCenter()
         val dateText: String =
-            context.resources.getString(R.string.date) + " " + extractDate(imageObj.getDate())
+            context.resources.getString(R.string.date) + " " + extractDate(nasaImage.getDate())
         titleView.text = titleText
         dateView.text = dateText
         authorView.text = authorText
-        loadImage(holder, imageObj.getURL(), imageObj.getBackupURL(), position)
+        loadImage(holder, nasaImage.getURL(), nasaImage.getBackupURL(), position)
     }
 
 

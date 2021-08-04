@@ -1,6 +1,6 @@
 package com.bronzeswordstudios.nasaimageviewer.model
 
-class ImageObj(
+class NasaImage(
     // our ImageObj class holds our information for each image to be displayed
     private val url: String?,
     private val title: String?,

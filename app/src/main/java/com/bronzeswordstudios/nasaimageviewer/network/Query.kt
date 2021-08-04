@@ -1,7 +1,7 @@
 package com.bronzeswordstudios.nasaimageviewer.network
 
 import android.util.Log
-import com.bronzeswordstudios.nasaimageviewer.model.ImageObj
+import com.bronzeswordstudios.nasaimageviewer.model.NasaImage
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -66,8 +66,8 @@ class Query {
             return stringBuilder.toString()
         }
 
-        private fun extractFromJson(inputJson: String?): ArrayList<ImageObj> {
-            val imageObjs: ArrayList<ImageObj> = ArrayList()
+        private fun extractFromJson(inputJson: String?): ArrayList<NasaImage> {
+            val nasaImages: ArrayList<NasaImage> = ArrayList()
             try {
                 val jsonResponse = JSONObject(inputJson)
                 val nasaJsonObj: JSONObject = jsonResponse.getJSONObject("collection")
@@ -88,16 +88,16 @@ class Query {
                     if (url != null) {
                         url = adjustURL(url)
                     }
-                    imageObjs.add(ImageObj(url, title, center, date, backupURL))
+                    nasaImages.add(NasaImage(url, title, center, date, backupURL))
                     i++
                 }
             } catch (e: java.lang.Exception) {
                 Log.e("JSON Error", "extractFromJson: $e")
             }
-            return imageObjs
+            return nasaImages
         }
 
-        fun collectData(urlString: String): ArrayList<ImageObj> {
+        fun collectData(urlString: String): ArrayList<NasaImage> {
             // this is the method we will call from our loader to return the JSON results
             val url = URL(urlString)
             val jsonResponse: String? = makeHTTPSRequest(url)

@@ -23,16 +23,7 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 
-/*TODO:
-    1. [x] Re-architecture package structure (there must be at least 3 packages: model, adapter, network).
-    2. [x] Factor out the ViewHolder class outside the adapter and move to the same "adapter" package.
-    3. [x] Enable orientation changes (do not restrict).
-    4. [x] For the dialog, use the standard Dialog Title view instead of setting the one of your layout (hint: this is not really that hard, justa  couple of methods).
-    5. [x] Clean build.gradle dependencies, remove unnecessary and update to latest stable versions.
-    6. [x] Delete unused methods on all code (commented out code and empty stub methods).
-    7. [x] Delete unused imports.*/
-
-class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayList<ImageObj>>,
+class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayList<NasaImage>>,
     SearchFragment.SearchDialogListener {
 
     // set up globals
@@ -49,7 +40,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     private var index = 0
 
     companion object {
-        var imageList = ArrayList<ImageObj>()
+        var imageList = ArrayList<NasaImage>()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -127,13 +118,13 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     /* begin our loader override methods here*/
     //--------------------------------------------------------------------------------------------//
 
-    override fun onCreateLoader(id: Int, args: Bundle?): Loader<ArrayList<ImageObj>> {
+    override fun onCreateLoader(id: Int, args: Bundle?): Loader<ArrayList<NasaImage>> {
         // pick a random url from our urlList
         return QueryLoader(this, urlSelectionHandler(isSearch))
     }
 
 
-    override fun onLoadFinished(loader: Loader<ArrayList<ImageObj>>, data: ArrayList<ImageObj>?) {
+    override fun onLoadFinished(loader: Loader<ArrayList<NasaImage>>, data: ArrayList<NasaImage>?) {
         // if we have data to show, set the adapters and away we go!
         if (data != null) {
             if (data.size == 0 && imageList.size != 0) {
@@ -167,7 +158,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
     }
 
 
-    override fun onLoaderReset(loader: Loader<ArrayList<ImageObj>>) {
+    override fun onLoaderReset(loader: Loader<ArrayList<NasaImage>>) {
         imageRecyclerView.adapter = null
     }
 
