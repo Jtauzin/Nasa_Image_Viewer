@@ -1,6 +1,5 @@
 package com.bronzeswordstudios.nasaimageviewer.model
 
-import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
 
 class NasaImage(
@@ -55,7 +54,7 @@ class NasaImage(
         return image
     }
 
-    fun setImage(image: Drawable){
+    fun setImage(image: Drawable) {
         this.image = image
     }
 }

@@ -14,7 +14,10 @@ import com.bronzeswordstudios.nasaimageviewer.model.NasaImage
 import java.io.InputStream
 import java.net.URL
 
-class ImageAdapter(private val nasaImageList: ArrayList<NasaImage>, private val activity: Activity) :
+class ImageAdapter(
+    private val nasaImageList: ArrayList<NasaImage>,
+    private val activity: Activity
+) :
     RecyclerView.Adapter<ViewHolder>() {
 
     lateinit var context: Context
@@ -56,17 +59,15 @@ class ImageAdapter(private val nasaImageList: ArrayList<NasaImage>, private val 
         authorView.text = authorText
 
         // load image if we do not already have one attached to our NasaImage object
-        if (nasaImageList[position].getImage() == null){
-        loadImage(holder, nasaImage.getURL(), nasaImage.getBackupURL(), position)
-        }
-        else{
+        if (nasaImageList[position].getImage() == null) {
+            loadImage(holder, nasaImage.getURL(), nasaImage.getBackupURL(), position)
+        } else {
             holder.nasaImage.setImageDrawable(nasaImageList[position].getImage())
             holder.nasaImage.visibility = View.VISIBLE
             holder.spinningLoader.visibility = View.INVISIBLE
         }
 
     }
-
 
     /* getItemID and getItemViewType overrides correct an issue with fast scrolling on recycler view.
     * sometimes when a user scrolls very fast, an incorrect image may render from mem. It is replaced
@@ -91,29 +92,29 @@ class ImageAdapter(private val nasaImageList: ArrayList<NasaImage>, private val 
         var drawable: Drawable?
 
         // check if we need to load the drawable or pull from list
-            Thread(Runnable {
+        Thread(Runnable {
+            try {
+                val input: InputStream = URL(url).content as InputStream
+                nasaImageList[position].setImage(Drawable.createFromStream(input, url))
+                drawable = nasaImageList[position].getImage()
+            } catch (e: Exception) {
                 try {
-                    val input: InputStream = URL(url).content as InputStream
-                    nasaImageList[position].setImage(Drawable.createFromStream(input, url))
+                    // if no higher res picture is available, return the low res picture
+                    val input: InputStream = URL(backupURL).content as InputStream
+                    nasaImageList[position].setImage(Drawable.createFromStream(input, backupURL))
                     drawable = nasaImageList[position].getImage()
                 } catch (e: Exception) {
-                    try {
-                        // if no higher res picture is available, return the low res picture
-                        val input: InputStream = URL(backupURL).content as InputStream
-                        nasaImageList[position].setImage(Drawable.createFromStream(input, backupURL))
-                        drawable = nasaImageList[position].getImage()
-                    } catch (e: Exception) {
-                        // if there is no high res JPG or backup picture, display error picture
-                        drawable = AppCompatResources.getDrawable(context, R.drawable.image_error)
-                    }
+                    // if there is no high res JPG or backup picture, display error picture
+                    drawable = AppCompatResources.getDrawable(context, R.drawable.image_error)
                 }
-                activity.runOnUiThread {
-                    // set UI via UI thread
-                    holder.nasaImage.setImageDrawable(drawable)
-                    holder.nasaImage.visibility = View.VISIBLE
-                    holder.spinningLoader.visibility = View.INVISIBLE
-                }
-            }).start()
+            }
+            activity.runOnUiThread {
+                // set UI via UI thread
+                holder.nasaImage.setImageDrawable(drawable)
+                holder.nasaImage.visibility = View.VISIBLE
+                holder.spinningLoader.visibility = View.INVISIBLE
+            }
+        }).start()
     }
 
     private fun extractDate(rawString: String?): String? {
