@@ -1,6 +1,7 @@
 package com.bronzeswordstudios.nasaimageviewer.model
 
 import android.net.ConnectivityManager
+import android.net.Network
 import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.view.MenuItem
@@ -24,12 +25,7 @@ import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayList<NasaImage>>,
-		SearchFragment.SearchDialogListener {
-
-	/*TODO:
-	   1. [x] Fix orientation changes (maintain current state of scrolling position and make sure you do not reload data just because).
-	   2. [-] Any other bugs introduced while making the before requested changes.
-	   fix bug when losing connection and navigating back to screen fix isPaused usage question */
+	SearchFragment.SearchDialogListener {
 
 	// set up globals
 	private lateinit var mLoaderManager: LoaderManager
@@ -38,21 +34,23 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 	private lateinit var imageAdapter: ImageAdapter
 	private lateinit var primaryProgressBar: ProgressBar
 	private var isSearch: Boolean = false
-	private var isPaused: Boolean = false
 	private var searchUrl: String = ""
 	private var urlList: ArrayList<String> = ArrayList()
 	private val loaderID = 0
 	private var index = 0
+	private lateinit var connectivityManager: ConnectivityManager
 
 	// Using this as a static object allows us to retain the values through a screen orientation
 	// change
 	companion object {
 		var imageList = ArrayList<NasaImage>()
+		var isLoaded: Boolean = false                    // this boolean is used so we do not reload data on focus change and return
 	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
+		connectivityManager = getSystemService(ConnectivityManager::class.java)
 
 		val appBar: MaterialToolbar = findViewById(R.id.app_bar)
 		val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
@@ -81,20 +79,19 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 
 		imageRecyclerView = findViewById(R.id.recycle_view)
 		imageRecyclerView.layoutManager = LinearLayoutManager(this)
-		if (imageList.size == 0) {
-			startLoader()
-		} else if (!hasConnectivity()) {
+		if (!hasConnectivity()) {
 			// check connectivity in case of rotation, we need to update screen if connection was lost
 			errorView.text = resources.getString(R.string.no_connection_text)
-			errorView.visibility = View.VISIBLE
 			primaryProgressBar.visibility = View.INVISIBLE
-		} else {
+		}
+
+		// if we still have values in our image list, we need to go ahead and load it here in case connection is restored later while in use
+		if (imageList.size != 0) {
 			// for screen rotation, on create is called again so we set the adapter to the
 			// prev. values
+			primaryProgressBar.visibility = View.INVISIBLE
 			imageAdapter = ImageAdapter(imageList, this)
 			imageRecyclerView.adapter = imageAdapter
-			primaryProgressBar.visibility = View.INVISIBLE
-			imageRecyclerView.visibility = View.VISIBLE
 		}
 
 
@@ -119,6 +116,26 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 			drawerLayout.closeDrawer(GravityCompat.START)
 			true
 		}
+
+		// lets listen for connectivity changes here, and adjust our UI accordingly *just for kicks*
+		connectivityManager.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
+			override fun onAvailable(network: Network) {
+				runOnUiThread(Runnable {
+					if (!isLoaded) {
+						startLoader()
+					}
+					errorView.visibility = View.INVISIBLE
+					imageRecyclerView.visibility = View.VISIBLE
+				})
+			}
+
+			override fun onLost(network: Network) {
+				runOnUiThread(Runnable {
+					errorView.visibility = View.VISIBLE
+					imageRecyclerView.visibility = View.INVISIBLE
+				})
+			}
+		})
 	}
 
 	//--------------------------------------------------------------------------------------------//
@@ -126,6 +143,8 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 	//--------------------------------------------------------------------------------------------//
 
 	override fun onCreateLoader(id: Int, args: Bundle?): Loader<ArrayList<NasaImage>> {
+		// we are loading a new stream, so reset our loaded boolean
+		isLoaded = false
 		// pick a random url from our urlList
 		return QueryLoader(this, urlSelectionHandler(isSearch))
 	}
@@ -139,7 +158,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 				// (either search or refresh)
 				val coordinatorLayout: CoordinatorLayout = findViewById(R.id.coordinator_layout)
 				val snackbar =
-						Snackbar.make(coordinatorLayout, R.string.no_results, Snackbar.LENGTH_LONG)
+					Snackbar.make(coordinatorLayout, R.string.no_results, Snackbar.LENGTH_LONG)
 
 				//add a dismiss option on the popup here
 				snackbar.setAction(R.string.dismiss) {
@@ -147,13 +166,15 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 				}
 
 				snackbar.show()
-			} else {
+			} else if (!isLoaded) {
 				imageList = data
 				imageAdapter = ImageAdapter(imageList, this)
 				imageRecyclerView.adapter = imageAdapter
 				imageRecyclerView.visibility = View.VISIBLE
 				errorView.visibility = View.INVISIBLE
 				primaryProgressBar.visibility = View.INVISIBLE
+				// we have loaded our data, now we can declare it as loaded.
+				isLoaded = true
 			}
 		}
 	}
@@ -178,7 +199,6 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 	override fun onDialogPositiveClick(dialog: SearchFragment) {
 		performSearch(dialog.getString())
 	}
-
 
 	//--------------------------------------------------------------------------------------------//
 	/* begin our custom methods here*/
@@ -223,7 +243,6 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 		}
 	}
 
-
 	private fun urlSelectionHandler(isSearch: Boolean): String {
 		return if (isSearch) {
 			this.isSearch = false
@@ -240,15 +259,13 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 		}
 	}
 
-
 	private fun hasConnectivity(): Boolean {
 		// check to see if we have connectivity. Returns true or false
-		val connectivityManager = getSystemService(ConnectivityManager::class.java)
 		val activeNetwork = connectivityManager.activeNetwork
 		val capabilities: NetworkCapabilities? =
-				connectivityManager.getNetworkCapabilities(activeNetwork)
+			connectivityManager.getNetworkCapabilities(activeNetwork)
 		var returnBoolean: Boolean? =
-				capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+			capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
 		if (returnBoolean == null) {
 			returnBoolean = false
 		}
@@ -289,9 +306,15 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 	/* lifecycle overrides here*/
 	//--------------------------------------------------------------------------------------------//
 
-	override fun onPause() {
-		isPaused = true
-		super.onPause()
+	override fun onResume() {
+		if (hasConnectivity()) {
+			errorView.visibility = View.INVISIBLE
+			imageRecyclerView.visibility = View.VISIBLE
+		} else {
+			errorView.visibility = View.VISIBLE
+			imageRecyclerView.visibility = View.INVISIBLE
+		}
+		super.onResume()
 	}
 
 	override fun onSaveInstanceState(outState: Bundle) {
