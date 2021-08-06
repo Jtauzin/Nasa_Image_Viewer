@@ -13,6 +13,7 @@
 		android:layout_height="wrap_content"
 		android:hint="@string/search_hint"
 		android:inputType="text"
-		android:textColorHint="#D3D3D3" />
+		android:textColorHint="#D3D3D3"
+		android:textSize="16sp"/>
 
 </LinearLayout>
