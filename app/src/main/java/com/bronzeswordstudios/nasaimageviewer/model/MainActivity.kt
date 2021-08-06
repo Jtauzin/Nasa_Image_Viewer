@@ -160,7 +160,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 	override fun onLoadFinished(loader: Loader<ArrayList<NasaImage>>, data: ArrayList<NasaImage>?) {
 		// if we have data to show, set the adapters and away we go!
 		if (data != null) {
-			if (data.size == 0) {
+			if (data.size == 0 && !isLoaded) {
 				createSnackBar(R.string.no_results)
 			} else if (!isLoaded) {
 				// only set data if this is a new request.
