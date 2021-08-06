@@ -134,9 +134,8 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 
 			override fun onLost(network: Network) {
 				runOnUiThread(Runnable {
-					if (imageRecyclerView.adapter != null) {
-						createSnackBar(R.string.connection_lost)
-					} else {
+					createSnackBar(R.string.connection_lost)
+					if (imageRecyclerView.adapter == null) {
 						errorView.visibility = View.VISIBLE
 						imageRecyclerView.visibility = View.INVISIBLE
 					}
