@@ -122,6 +122,9 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 			override fun onAvailable(network: Network) {
 				runOnUiThread(Runnable {
 					if (!isLoaded) {
+						// delay here for change in connectivity. When connection reestablished it can take a second
+						// to have access to that new connection even though it has been detected.
+						Thread.sleep(1000)
 						startLoader()
 					}
 					errorView.visibility = View.INVISIBLE
@@ -131,8 +134,12 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 
 			override fun onLost(network: Network) {
 				runOnUiThread(Runnable {
-					errorView.visibility = View.VISIBLE
-					imageRecyclerView.visibility = View.INVISIBLE
+					if (imageRecyclerView.adapter != null) {
+						createSnackBar(R.string.connection_lost)
+					} else {
+						errorView.visibility = View.VISIBLE
+						imageRecyclerView.visibility = View.INVISIBLE
+					}
 				})
 			}
 		})
@@ -153,29 +160,19 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 	override fun onLoadFinished(loader: Loader<ArrayList<NasaImage>>, data: ArrayList<NasaImage>?) {
 		// if we have data to show, set the adapters and away we go!
 		if (data != null) {
-			if (data.size == 0 && imageList.size != 0 && hasConnectivity()) {
-				// the boolean above means the next data pull was not successful
-				// (either search or refresh)
-				val coordinatorLayout: CoordinatorLayout = findViewById(R.id.coordinator_layout)
-				val snackbar =
-					Snackbar.make(coordinatorLayout, R.string.no_results, Snackbar.LENGTH_LONG)
-
-				//add a dismiss option on the popup here
-				snackbar.setAction(R.string.dismiss) {
-					snackbar.dismiss()
-				}
-
-				snackbar.show()
+			if (data.size == 0) {
+				createSnackBar(R.string.no_results)
 			} else if (!isLoaded) {
+				// only set data if this is a new request.
 				imageList = data
 				imageAdapter = ImageAdapter(imageList, this)
 				imageRecyclerView.adapter = imageAdapter
-				imageRecyclerView.visibility = View.VISIBLE
-				errorView.visibility = View.INVISIBLE
-				primaryProgressBar.visibility = View.INVISIBLE
 				// we have loaded our data, now we can declare it as loaded.
 				isLoaded = true
 			}
+			imageRecyclerView.visibility = View.VISIBLE
+			errorView.visibility = View.INVISIBLE
+			primaryProgressBar.visibility = View.INVISIBLE
 		}
 	}
 
@@ -300,6 +297,17 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 	private fun displaySearch() {
 		val searchDialog = SearchFragment()
 		searchDialog.show(supportFragmentManager, "search")
+	}
+
+	private fun createSnackBar(resource: Int) {
+		val coordinatorLayout: CoordinatorLayout = findViewById(R.id.coordinator_layout)
+		val snackbar =
+			Snackbar.make(coordinatorLayout, resource, Snackbar.LENGTH_LONG)
+		//add a dismiss option on the popup here
+		snackbar.setAction(R.string.dismiss) {
+			snackbar.dismiss()
+		}
+		snackbar.show()
 	}
 
 	//--------------------------------------------------------------------------------------------//
