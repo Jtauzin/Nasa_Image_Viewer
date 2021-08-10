@@ -9,6 +9,7 @@
     <string name="cancel">Cancel</string>
     <string name="no_results">Sorry! There are no results available!</string>
     <string name="connection_lost">Uh oh! It appears your connection has been lost</string>
+    <string name="load_result_error">There was a problem getting results.</string>
     <string name="title">Title: </string>
     <string name="author">Center(Author/Owner): </string>
     <string name="date">Date: </string>

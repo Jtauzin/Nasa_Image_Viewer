@@ -14,7 +14,6 @@ class NasaImage(
 	// we will store each picture as it is loaded to avoid reloading images later.
 	private var image: Drawable? = null
 
-
 	fun getDate(): String {
 		if (date == null) {
 			return "Date not available"
