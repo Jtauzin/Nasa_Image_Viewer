@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity(),
 		if (imageList.size != 0) {
 			// for screen rotation, on create is called again so we set the adapter to the
 			// prev. values
-			imageAdapter = ImageAdapter(imageList, this)
+			imageAdapter = ImageAdapter(imageList)
 			imageRecyclerView.adapter = imageAdapter
 			adjustVisibility(View.VISIBLE)
 		} else if (!hasConnectivity()) {
@@ -227,7 +227,7 @@ class MainActivity : AppCompatActivity(),
 			override fun onResponse(p0: Call<DataResult>, p1: Response<DataResult>) {
 				if (p1.body() != null) {
 					imageList = p1.body()!!.nasaImages
-					imageAdapter = ImageAdapter(imageList, this@MainActivity)
+					imageAdapter = ImageAdapter(imageList)
 					imageRecyclerView.adapter = imageAdapter
 				}
 			}
@@ -255,7 +255,7 @@ class MainActivity : AppCompatActivity(),
 					createSnackBar(R.string.no_results)
 					return
 				}
-				imageAdapter = ImageAdapter(imageList, this@MainActivity)
+				imageAdapter = ImageAdapter(imageList)
 				imageRecyclerView.adapter = imageAdapter
 			}
 
