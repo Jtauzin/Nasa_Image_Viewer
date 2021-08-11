@@ -6,7 +6,7 @@
 	android:fitsSystemWindows="true"
 	android:orientation="vertical">
 
-	<TextView
+	<com.google.android.material.textview.MaterialTextView
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_marginStart="24dp"
@@ -16,7 +16,7 @@
 		android:textAppearance="?attr/textAppearanceHeadline6"
 		android:textSize="20sp" />
 
-	<TextView
+	<com.google.android.material.textview.MaterialTextView
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_marginStart="24dp"

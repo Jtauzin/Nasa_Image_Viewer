@@ -19,37 +19,38 @@
 			android:scaleType="fitCenter"
 			android:visibility="invisible" />
 
-		<ProgressBar
+		<com.google.android.material.progressindicator.CircularProgressIndicator
 			android:id="@+id/spinning_loader"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_centerInParent="true"
+			android:indeterminate="true"
 			android:visibility="visible" />
 
 	</RelativeLayout>
 
-	<TextView
+	<com.google.android.material.textview.MaterialTextView
 		android:id="@+id/title_view"
-		style="@style/adapter_text"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_margin="8dp"
+		style="@style/adapter_text"
 		android:text="@string/title" />
 
-	<TextView
+	<com.google.android.material.textview.MaterialTextView
 		android:id="@+id/center_view"
-		style="@style/adapter_text"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_margin="8dp"
+		style="@style/adapter_text"
 		android:text="@string/author" />
 
-	<TextView
+	<com.google.android.material.textview.MaterialTextView
 		android:id="@+id/date_view"
-		style="@style/adapter_text"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_margin="8dp"
+		style="@style/adapter_text"
 		android:text="@string/date" />
 
 	<View
