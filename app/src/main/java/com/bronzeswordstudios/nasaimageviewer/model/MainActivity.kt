@@ -13,18 +13,21 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.loader.app.LoaderManager
-import androidx.loader.content.Loader
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bronzeswordstudios.nasaimageviewer.R
 import com.bronzeswordstudios.nasaimageviewer.adapter.ImageAdapter
-import com.bronzeswordstudios.nasaimageviewer.network.QueryLoader
+import com.bronzeswordstudios.nasaimageviewer.network.API
+import com.bronzeswordstudios.nasaimageviewer.network.RetroFitClient
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
-class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayList<NasaImage>>,
+class MainActivity : AppCompatActivity(),
 	SearchFragment.SearchDialogListener {
 
 	// set up globals
@@ -33,18 +36,14 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 	private lateinit var errorView: TextView
 	private lateinit var imageAdapter: ImageAdapter
 	private lateinit var primaryProgressBar: ProgressBar
-	private var isSearch: Boolean = false
-	private var searchUrl: String = ""
-	private var urlList: ArrayList<String> = ArrayList()
-	private val loaderID = 0
+	private val ERROR = 8140146
 	private var index = 0
 	private lateinit var connectivityManager: ConnectivityManager
 
 	// Using this as a static object allows us to retain the values through a screen orientation
 	// change
 	companion object {
-		var imageList = ArrayList<NasaImage>()
-		var isLoaded: Boolean = false                    // this boolean is used so we do not reload data on focus change and return
+		var nasaImages: ArrayList<NasaImage> = ArrayList()
 	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,52 +54,35 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 		val appBar: MaterialToolbar = findViewById(R.id.app_bar)
 		val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
 		val navView: NavigationView = findViewById(R.id.nav_view)
-
 		primaryProgressBar = findViewById(R.id.primary_progress_bar)
 		errorView = findViewById(R.id.error_view)
 		mLoaderManager = LoaderManager.getInstance(this)
 
-		// create a list of potential urls to request for variety
-		urlList.add("https://images-api.nasa.gov/search?q=galaxy&media_type=image")
-		urlList.add("https://images-api.nasa.gov/search?q=solar&media_type=image")
-		urlList.add("https://images-api.nasa.gov/search?q=asteroid&media_type=image")
-		urlList.add("https://images-api.nasa.gov/search?q=UFO&media_type=image")
-		urlList.add("https://images-api.nasa.gov/search?q=moon&media_type=image")
-		urlList.add("https://images-api.nasa.gov/search?q=mars+rover&media_type=image")
-		urlList.add("https://images-api.nasa.gov/search?q=mercury&media_type=image")
-		urlList.add("https://images-api.nasa.gov/search?q=venus&media_type=image")
-		urlList.add("https://images-api.nasa.gov/search?q=earth&media_type=image")
-		urlList.add("https://images-api.nasa.gov/search?q=mars&media_type=image")
-		urlList.add("https://images-api.nasa.gov/search?q=jupiter&media_type=image")
-		urlList.add("https://images-api.nasa.gov/search?q=saturn&media_type=image")
-		urlList.add("https://images-api.nasa.gov/search?q=uranus&media_type=image")
-		urlList.add("https://images-api.nasa.gov/search?q=neptune&media_type=image")
-		urlList.add("https://images-api.nasa.gov/search?q=pluto&media_type=image")
-
 		imageRecyclerView = findViewById(R.id.recycle_view)
 		imageRecyclerView.layoutManager = LinearLayoutManager(this)
-		if (!hasConnectivity()) {
-			// check connectivity in case of rotation, we need to update screen if connection was lost
-			errorView.text = resources.getString(R.string.no_connection_text)
-			primaryProgressBar.visibility = View.INVISIBLE
-		}
 
 		// if we still have values in our image list, we need to go ahead and load it here in case connection is restored later while in use
-		if (imageList.size != 0) {
+		if (nasaImages.isNotEmpty()) {
 			// for screen rotation, on create is called again so we set the adapter to the
 			// prev. values
-			primaryProgressBar.visibility = View.INVISIBLE
-			imageAdapter = ImageAdapter(imageList, this)
+			imageAdapter = ImageAdapter(nasaImages)
 			imageRecyclerView.adapter = imageAdapter
+			adjustVisibility(View.VISIBLE)
+		} else if (!hasConnectivity()) {
+			// check connectivity in case of rotation, we need to update screen if connection was lost
+			adjustVisibility(ERROR)
 		}
-
 
 		// set refresh layout logic
 		val layoutRefresher: SwipeRefreshLayout = findViewById(R.id.swipe_refresh)
 		layoutRefresher.setOnRefreshListener {
 
 			// call restart loader and cease refreshing indicator
-			restartLoader()
+			index += 1
+			if (index == 15) {
+				index = 0
+			}
+			callRetrofit()
 			layoutRefresher.isRefreshing = false
 		}
 
@@ -121,64 +103,33 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 		connectivityManager.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
 			override fun onAvailable(network: Network) {
 				runOnUiThread(Runnable {
-					if (!isLoaded) {
+					if (nasaImages.isEmpty()) {
 						// delay here for change in connectivity. When connection reestablished it can take a second
 						// to have access to that new connection even though it has been detected.
 						Thread.sleep(1000)
-						startLoader()
+						callRetrofit()
 					}
-					errorView.visibility = View.INVISIBLE
-					imageRecyclerView.visibility = View.VISIBLE
+					adjustVisibility(View.VISIBLE)
 				})
 			}
 
 			override fun onLost(network: Network) {
 				runOnUiThread(Runnable {
 					createSnackBar(R.string.connection_lost)
-					if (imageRecyclerView.adapter == null) {
-						errorView.visibility = View.VISIBLE
-						imageRecyclerView.visibility = View.INVISIBLE
+					if (nasaImages.isEmpty()) {
+						adjustVisibility(ERROR)
 					}
 				})
 			}
 		})
-	}
-
-	//--------------------------------------------------------------------------------------------//
-	/* begin our loader override methods here*/
-	//--------------------------------------------------------------------------------------------//
-
-	override fun onCreateLoader(id: Int, args: Bundle?): Loader<ArrayList<NasaImage>> {
-		// we are loading a new stream, so reset our loaded boolean
-		isLoaded = false
-		// pick a random url from our urlList
-		return QueryLoader(this, urlSelectionHandler(isSearch))
-	}
-
-
-	override fun onLoadFinished(loader: Loader<ArrayList<NasaImage>>, data: ArrayList<NasaImage>?) {
-		// if we have data to show, set the adapters and away we go!
-		if (data != null) {
-			if (data.size == 0 && !isLoaded) {
-				createSnackBar(R.string.no_results)
-			} else if (!isLoaded) {
-				// only set data if this is a new request.
-				imageList = data
-				imageAdapter = ImageAdapter(imageList, this)
-				imageRecyclerView.adapter = imageAdapter
-				// we have loaded our data, now we can declare it as loaded.
-				isLoaded = true
-			}
-			imageRecyclerView.visibility = View.VISIBLE
-			errorView.visibility = View.INVISIBLE
-			primaryProgressBar.visibility = View.INVISIBLE
+		if (nasaImages.isEmpty()) {
+			callRetrofit()
 		}
 	}
 
-
-	override fun onLoaderReset(loader: Loader<ArrayList<NasaImage>>) {
-		imageRecyclerView.adapter = null
-	}
+	//--------------------------------------------------------------------------------------------//
+	/* Non-lifecycle override methods here*/
+	//--------------------------------------------------------------------------------------------//
 
 	override fun onOptionsItemSelected(item: MenuItem): Boolean {
 		when (item.itemId) {
@@ -193,67 +144,12 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 
 	// for our search dialog pop up
 	override fun onDialogPositiveClick(dialog: SearchFragment) {
-		performSearch(dialog.getString())
+		callRetrofit(dialog.getString())
 	}
 
 	//--------------------------------------------------------------------------------------------//
 	/* begin our custom methods here*/
 	//--------------------------------------------------------------------------------------------//
-
-	private fun performSearch(searchString: String) {
-		// just for some fun, lets give the user the option to search for images
-		// set isSearch to true so our URL selector will know what to do
-		val urlList: ArrayList<String> = ArrayList()
-		isSearch = true
-
-		// start with the base search URL split into 2 to build upon
-		urlList.add("https://images-api.nasa.gov/search?")
-		urlList.add("&media_type=image")
-		searchUrl = ""
-
-		// if the user did not input anything. Behave like normal
-		if (searchString == "") {
-			isSearch = false
-			restartLoader()
-		}
-
-		// else split the search parameters into an array and add them to the query
-		else {
-			val textToSearch = searchString.split(" ")
-			searchUrl += urlList[0]
-			for ((i, word) in textToSearch.withIndex()) {
-				if (i == 0) {
-					searchUrl += "q=$word"
-				}
-				if (i > 0) {
-					searchUrl += word
-				}
-				if (i < textToSearch.size - 1) {
-					searchUrl += "+"
-				}
-			}
-
-			// complete the URL and load the new images!
-			searchUrl += urlList[1]
-			restartLoader()
-		}
-	}
-
-	private fun urlSelectionHandler(isSearch: Boolean): String {
-		return if (isSearch) {
-			this.isSearch = false
-			searchUrl
-		} else {
-			// here we adjust our URL from our selections
-			if (index >= urlList.size) {
-				// if our index exceeds our list length reset
-				index = 0
-			}
-			val urlToReturn = urlList[index]
-			index += 1
-			urlToReturn
-		}
-	}
 
 	private fun hasConnectivity(): Boolean {
 		// check to see if we have connectivity. Returns true or false
@@ -268,31 +164,6 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 		return returnBoolean
 	}
 
-	private fun restartLoader() {
-		// handles loader reset logic:
-		// UI updates, loader reset, and connectivity check for a loader restart
-		if (hasConnectivity()) {
-			mLoaderManager.restartLoader(loaderID, null, this)
-			errorView.visibility = View.INVISIBLE
-			imageRecyclerView.visibility = View.VISIBLE
-		} else {
-			errorView.text = resources.getString(R.string.no_connection_text)
-			errorView.visibility = View.VISIBLE
-			imageRecyclerView.visibility = View.INVISIBLE
-		}
-	}
-
-	private fun startLoader() {
-		// create connectivity check
-		if (hasConnectivity()) {
-			// if connected load items, else display connection error message
-			mLoaderManager.initLoader(loaderID, null, this)
-		} else {
-			errorView.visibility = View.VISIBLE
-			primaryProgressBar.visibility = View.INVISIBLE
-		}
-	}
-
 	private fun displaySearch() {
 		val searchDialog = SearchFragment()
 		searchDialog.show(supportFragmentManager, "search")
@@ -300,8 +171,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 
 	private fun createSnackBar(resource: Int) {
 		val coordinatorLayout: CoordinatorLayout = findViewById(R.id.coordinator_layout)
-		val snackbar =
-			Snackbar.make(coordinatorLayout, resource, Snackbar.LENGTH_LONG)
+		val snackbar = Snackbar.make(coordinatorLayout, resource, Snackbar.LENGTH_LONG)
 		//add a dismiss option on the popup here
 		snackbar.setAction(R.string.dismiss) {
 			snackbar.dismiss()
@@ -309,20 +179,100 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<ArrayLis
 		snackbar.show()
 	}
 
+	private fun adjustVisibility(visibility: Int) {
+		when (visibility) {
+			View.VISIBLE -> {
+				errorView.visibility = View.INVISIBLE
+				primaryProgressBar.visibility = View.INVISIBLE
+				imageRecyclerView.visibility = View.VISIBLE
+			}
+			View.INVISIBLE -> {
+				errorView.visibility = View.INVISIBLE
+				primaryProgressBar.visibility = View.VISIBLE
+				imageRecyclerView.visibility = View.INVISIBLE
+			}
+			ERROR -> {
+				errorView.text = resources.getString(R.string.no_connection_text)
+				errorView.visibility = View.VISIBLE
+				primaryProgressBar.visibility = View.INVISIBLE
+				imageRecyclerView.visibility = View.INVISIBLE
+			}
+		}
+	}
+
+	private fun callRetrofit() {
+		// retrofit implementation
+		val api: API = RetroFitClient.getRetrofitInstance().create(API::class.java)
+		var call: Call<DataResult>? = null
+		when (index) {
+			0 -> call = api.getSearch(API.queryList[0])
+			1 -> call = api.getSearch(API.queryList[1])
+			2 -> call = api.getSearch(API.queryList[2])
+			3 -> call = api.getSearch(API.queryList[3])
+			4 -> call = api.getSearch(API.queryList[4])
+			5 -> call = api.getSearch(API.queryList[5])
+			6 -> call = api.getSearch(API.queryList[6])
+			7 -> call = api.getSearch(API.queryList[7])
+			8 -> call = api.getSearch(API.queryList[8])
+			9 -> call = api.getSearch(API.queryList[9])
+			10 -> call = api.getSearch(API.queryList[10])
+			11 -> call = api.getSearch(API.queryList[11])
+			12 -> call = api.getSearch(API.queryList[12])
+			13 -> call = api.getSearch(API.queryList[13])
+			14 -> call = api.getSearch(API.queryList[14])
+		}
+
+		call?.enqueue(object : Callback<DataResult> {
+			override fun onResponse(p0: Call<DataResult>, p1: Response<DataResult>) {
+				if (p1.body()!!.collection.items.isEmpty()) {
+					createSnackBar(R.string.no_results)
+					return
+				}
+				nasaImages = p1.body()!!.collection.items as ArrayList<NasaImage>
+				imageAdapter = ImageAdapter(nasaImages)
+				imageRecyclerView.adapter = imageAdapter
+			}
+
+			override fun onFailure(p0: Call<DataResult>, p1: Throwable) {
+				createSnackBar(R.string.load_result_error)
+				if (nasaImages.isEmpty()) {
+					adjustVisibility(ERROR)
+				}
+			}
+		})
+	}
+
+	private fun callRetrofit(query: String) {
+		// retrofit implementation
+		if (query == "") {
+			return
+		}
+		val api: API = RetroFitClient.getRetrofitInstance().create(API::class.java)
+		val call: Call<DataResult>? = api.getSearch(query)
+
+		call?.enqueue(object : Callback<DataResult> {
+			override fun onResponse(p0: Call<DataResult>, p1: Response<DataResult>) {
+				if (p1.body()!!.collection.items.isEmpty()) {
+					createSnackBar(R.string.no_results)
+					return
+				}
+				nasaImages = p1.body()!!.collection.items as ArrayList<NasaImage>
+				imageAdapter = ImageAdapter(nasaImages)
+				imageRecyclerView.adapter = imageAdapter
+			}
+
+			override fun onFailure(p0: Call<DataResult>, p1: Throwable) {
+				createSnackBar(R.string.load_result_error)
+				if (nasaImages.isEmpty()) {
+					adjustVisibility(ERROR)
+				}
+			}
+		})
+	}
+
 	//--------------------------------------------------------------------------------------------//
 	/* lifecycle overrides here*/
 	//--------------------------------------------------------------------------------------------//
-
-	override fun onResume() {
-		if (hasConnectivity()) {
-			errorView.visibility = View.INVISIBLE
-			imageRecyclerView.visibility = View.VISIBLE
-		} else {
-			errorView.visibility = View.VISIBLE
-			imageRecyclerView.visibility = View.INVISIBLE
-		}
-		super.onResume()
-	}
 
 	override fun onSaveInstanceState(outState: Bundle) {
 		outState.putInt("index", index)
