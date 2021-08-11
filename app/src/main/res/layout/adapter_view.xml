@@ -1,62 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<com.google.android.material.card.MaterialCardView
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
-	android:orientation="vertical">
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:layout_margin="8dp"
+	app:cardElevation="8dp">
 
-	<RelativeLayout
+	<LinearLayout
 		android:layout_width="match_parent"
-		android:layout_height="300dp">
+		android:layout_height="wrap_content"
+		android:orientation="vertical">
 
-		<ImageView
-			android:id="@+id/nasa_image"
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:layout_marginLeft="8dp"
-			android:layout_marginRight="8dp"
-			android:contentDescription="@string/image_content_desc"
-			android:scaleType="fitCenter"
-			android:visibility="invisible" />
-
-		<com.google.android.material.progressindicator.CircularProgressIndicator
-			android:id="@+id/spinning_loader"
+		<com.google.android.material.textview.MaterialTextView
+			android:id="@+id/title_view"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:layout_centerInParent="true"
-			android:indeterminate="true"
-			android:visibility="visible" />
+			android:layout_margin="16dp"
+			style="@style/TextAppearance.MaterialComponents.Headline5"
+			android:text="@string/title" />
 
-	</RelativeLayout>
+		<RelativeLayout
+			android:layout_width="match_parent"
+			android:layout_height="300dp">
 
-	<com.google.android.material.textview.MaterialTextView
-		android:id="@+id/title_view"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_margin="8dp"
-		style="@style/adapter_text"
-		android:text="@string/title" />
+			<ImageView
+				android:id="@+id/nasa_image"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:contentDescription="@string/image_content_desc"
+				android:scaleType="fitCenter"
+				android:visibility="invisible" />
 
-	<com.google.android.material.textview.MaterialTextView
-		android:id="@+id/center_view"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_margin="8dp"
-		style="@style/adapter_text"
-		android:text="@string/author" />
+			<com.google.android.material.progressindicator.CircularProgressIndicator
+				android:id="@+id/spinning_loader"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_centerInParent="true"
+				android:indeterminate="true"
+				android:visibility="visible" />
 
-	<com.google.android.material.textview.MaterialTextView
-		android:id="@+id/date_view"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_margin="8dp"
-		style="@style/adapter_text"
-		android:text="@string/date" />
+		</RelativeLayout>
 
-	<View
-		android:layout_width="match_parent"
-		android:layout_height="1dp"
-		android:layout_margin="8dp"
-		android:background="#000000" />
+		<com.google.android.material.textview.MaterialTextView
+			android:id="@+id/center_view"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginStart="16dp"
+			android:layout_marginTop="16dp"
+			style="@style/TextAppearance.MaterialComponents.Body1"
+			android:text="@string/author" />
 
-</LinearLayout>
+		<com.google.android.material.textview.MaterialTextView
+			android:id="@+id/date_view"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginStart="16dp"
+			android:layout_marginTop="8dp"
+			android:layout_marginBottom="8dp"
+			style="@style/TextAppearance.MaterialComponents.Body2"
+			android:text="@string/date" />
+
+	</LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

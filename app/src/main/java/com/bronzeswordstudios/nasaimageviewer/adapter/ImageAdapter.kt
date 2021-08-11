@@ -49,14 +49,10 @@ class ImageAdapter(
 		val titleView: TextView = holder.titleView
 		val dateView: TextView = holder.dateView
 		val authorView: TextView = holder.authorView
-		val titleText: String =
-			context.resources.getString(R.string.title) + " " + genData.title
 		val authorText: String =
 			context.resources.getString(R.string.author) + " " + genData.center
-		val dateText: String =
-			context.resources.getString(R.string.date) + " " + extractDate(genData.dateCreated)
-		titleView.text = titleText
-		dateView.text = dateText
+		titleView.text = genData.title
+		dateView.text = extractDate(genData.dateCreated)
 		authorView.text = authorText
 
 		// load image if we do not already have one attached to our NasaImage object
