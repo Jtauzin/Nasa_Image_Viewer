@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-public class Item {
+public class NasaImage {
 
 	@SerializedName("href")
 	@Expose
@@ -13,19 +13,19 @@ public class Item {
 
 	@SerializedName("data")
 	@Expose
-	private List<Datum> data = null;
+	private List<GeneralData> data;
 
 	@SerializedName("links")
 	@Expose
-	private List<Link> links = null;
+	private List<ImageData> imageData;
 
 
 
-	public Item (String href, List<Datum> data, List<Link> links) {
+	public NasaImage (String href, List<GeneralData> data, List<ImageData> imageData) {
 		super();
 		this.href = href;
 		this.data = data;
-		this.links = links;
+		this.imageData = imageData;
 	}
 
 
@@ -42,26 +42,26 @@ public class Item {
 
 
 
-	public List<Datum> getData () {
+	public List<GeneralData> getData () {
 		return data;
 	}
 
 
 
-	public void setData (List<Datum> data) {
+	public void setData (List<GeneralData> data) {
 		this.data = data;
 	}
 
 
 
-	public List<Link> getLinks () {
-		return links;
+	public List<ImageData> getImages () {
+		return imageData;
 	}
 
 
 
-	public void setLinks (List<Link> links) {
-		this.links = links;
+	public void setImages (List<ImageData> imageData) {
+		this.imageData = imageData;
 	}
 
 }

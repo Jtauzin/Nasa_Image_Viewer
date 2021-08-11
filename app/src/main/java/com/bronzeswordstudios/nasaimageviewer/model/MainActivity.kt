@@ -36,7 +36,6 @@ class MainActivity : AppCompatActivity(),
 	private lateinit var errorView: TextView
 	private lateinit var imageAdapter: ImageAdapter
 	private lateinit var primaryProgressBar: ProgressBar
-	private var isSearch: Boolean = false
 	private val ERROR = 8140146
 	private var index = 0
 	private lateinit var connectivityManager: ConnectivityManager
@@ -44,7 +43,7 @@ class MainActivity : AppCompatActivity(),
 	// Using this as a static object allows us to retain the values through a screen orientation
 	// change
 	companion object {
-		var imageList = ArrayList<NasaImage>()
+		var nasaImages: ArrayList<NasaImage> = ArrayList()
 	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,10 +62,10 @@ class MainActivity : AppCompatActivity(),
 		imageRecyclerView.layoutManager = LinearLayoutManager(this)
 
 		// if we still have values in our image list, we need to go ahead and load it here in case connection is restored later while in use
-		if (imageList.isNotEmpty()) {
+		if (nasaImages.isNotEmpty()) {
 			// for screen rotation, on create is called again so we set the adapter to the
 			// prev. values
-			imageAdapter = ImageAdapter(imageList)
+			imageAdapter = ImageAdapter(nasaImages)
 			imageRecyclerView.adapter = imageAdapter
 			adjustVisibility(View.VISIBLE)
 		} else if (!hasConnectivity()) {
@@ -104,7 +103,7 @@ class MainActivity : AppCompatActivity(),
 		connectivityManager.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
 			override fun onAvailable(network: Network) {
 				runOnUiThread(Runnable {
-					if (imageList.isEmpty()) {
+					if (nasaImages.isEmpty()) {
 						// delay here for change in connectivity. When connection reestablished it can take a second
 						// to have access to that new connection even though it has been detected.
 						Thread.sleep(1000)
@@ -117,13 +116,13 @@ class MainActivity : AppCompatActivity(),
 			override fun onLost(network: Network) {
 				runOnUiThread(Runnable {
 					createSnackBar(R.string.connection_lost)
-					if (imageList.isEmpty()) {
+					if (nasaImages.isEmpty()) {
 						adjustVisibility(ERROR)
 					}
 				})
 			}
 		})
-		if (imageList.isEmpty()) {
+		if (nasaImages.isEmpty()) {
 			callRetrofit()
 		}
 	}
@@ -225,15 +224,20 @@ class MainActivity : AppCompatActivity(),
 
 		call?.enqueue(object : Callback<DataResult> {
 			override fun onResponse(p0: Call<DataResult>, p1: Response<DataResult>) {
-				if (p1.body() != null) {
-					imageList = p1.body()!!.nasaImages
-					imageAdapter = ImageAdapter(imageList)
-					imageRecyclerView.adapter = imageAdapter
+				if (p1.body()!!.collection.items.isEmpty()) {
+					createSnackBar(R.string.no_results)
+					return
 				}
+				nasaImages = p1.body()!!.collection.items as ArrayList<NasaImage>
+				imageAdapter = ImageAdapter(nasaImages)
+				imageRecyclerView.adapter = imageAdapter
 			}
 
 			override fun onFailure(p0: Call<DataResult>, p1: Throwable) {
 				createSnackBar(R.string.load_result_error)
+				if (nasaImages.isEmpty()) {
+					adjustVisibility(ERROR)
+				}
 			}
 		})
 	}
@@ -244,23 +248,24 @@ class MainActivity : AppCompatActivity(),
 			return
 		}
 		val api: API = RetroFitClient.getRetrofitInstance().create(API::class.java)
-		var call: Call<DataResult>? = null
-		call = api.getSearch(query)
-		isSearch = false
+		val call: Call<DataResult>? = api.getSearch(query)
 
 		call?.enqueue(object : Callback<DataResult> {
 			override fun onResponse(p0: Call<DataResult>, p1: Response<DataResult>) {
-				imageList = p1.body()!!.nasaImages
-				if (imageList.isEmpty()) {
+				if (p1.body()!!.collection.items.isEmpty()) {
 					createSnackBar(R.string.no_results)
 					return
 				}
-				imageAdapter = ImageAdapter(imageList)
+				nasaImages = p1.body()!!.collection.items as ArrayList<NasaImage>
+				imageAdapter = ImageAdapter(nasaImages)
 				imageRecyclerView.adapter = imageAdapter
 			}
 
 			override fun onFailure(p0: Call<DataResult>, p1: Throwable) {
 				createSnackBar(R.string.load_result_error)
+				if (nasaImages.isEmpty()) {
+					adjustVisibility(ERROR)
+				}
 			}
 		})
 	}

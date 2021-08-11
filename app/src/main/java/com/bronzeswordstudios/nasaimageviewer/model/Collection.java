@@ -12,13 +12,13 @@ public class Collection {
 	private String href;
 	@SerializedName("items")
 	@Expose
-	private List<Item> items = null;
+	private List<NasaImage> nasaImages;
 
 
 
-	public Collection (String href, List<Item> items) {
+	public Collection (String href, List<NasaImage> nasaImages) {
 		this.href = href;
-		this.items = items;
+		this.nasaImages = nasaImages;
 	}
 
 
@@ -42,20 +42,20 @@ public class Collection {
 
 
 
-	public List<Item> getItems () {
-		return items;
+	public List<NasaImage> getItems () {
+		return nasaImages;
 	}
 
 
 
-	public void setItems (List<Item> items) {
-		this.items = items;
+	public void setItems (List<NasaImage> nasaImages) {
+		this.nasaImages = nasaImages;
 	}
 
 
 
-	public Collection withItems (List<Item> items) {
-		this.items = items;
+	public Collection withItems (List<NasaImage> nasaImages) {
+		this.nasaImages = nasaImages;
 		return this;
 	}
 

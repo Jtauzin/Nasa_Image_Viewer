@@ -1,6 +1,5 @@
 package com.bronzeswordstudios.nasaimageviewer.adapter
 
-import android.app.Activity
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -13,7 +12,7 @@ import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 
 class ImageAdapter(
-	private val nasaImageList: ArrayList<NasaImage>
+	private val nasaImages: ArrayList<NasaImage>
 ) :
 	RecyclerView.Adapter<ViewHolder>() {
 
@@ -36,30 +35,35 @@ class ImageAdapter(
 
 	override fun getItemCount(): Int {
 		// item count should equal the list size
-		return nasaImageList.size
+		return nasaImages.size
 	}
 
 	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-		// set imageObj attributes here
+		// find attributes here
+		val item = nasaImages[position]
+		val genData = item.data[0]
+		val imageData = item.images[0]
+		val url = imageData.href
+
+		// set attributes
 		val titleView: TextView = holder.titleView
 		val dateView: TextView = holder.dateView
 		val authorView: TextView = holder.authorView
-		val nasaImage: NasaImage = nasaImageList[position]
 		val titleText: String =
-			context.resources.getString(R.string.title) + " " + nasaImage.getTitle()
+			context.resources.getString(R.string.title) + " " + genData.title
 		val authorText: String =
-			context.resources.getString(R.string.author) + " " + nasaImage.getCenter()
+			context.resources.getString(R.string.author) + " " + genData.center
 		val dateText: String =
-			context.resources.getString(R.string.date) + " " + extractDate(nasaImage.getDate())
+			context.resources.getString(R.string.date) + " " + extractDate(genData.dateCreated)
 		titleView.text = titleText
 		dateView.text = dateText
 		authorView.text = authorText
 
 		// load image if we do not already have one attached to our NasaImage object
-		if (nasaImage.getImage() == null) {
-			loadImage(holder, nasaImage.getURL(), nasaImage.getBackupURL(), position)
+		if (imageData.srcImage == null) {
+			loadImage(holder, adjustURL(url), url, position)
 		} else {
-			holder.nasaImage.setImageDrawable(nasaImage.getImage())
+			holder.nasaImage.setImageDrawable(imageData.srcImage)
 			changeVisibility(View.VISIBLE, holder)
 		}
 
@@ -88,14 +92,14 @@ class ImageAdapter(
 		// check if we need to load the drawable or pull from list
 		Picasso.get().load(url).error(R.drawable.image_error).into(holder.nasaImage, object : Callback {
 			override fun onSuccess() {
-				nasaImageList[position].setImage(holder.nasaImage.drawable)
+				nasaImages[position].images[0].srcImage = holder.nasaImage.drawable
 				changeVisibility(View.VISIBLE, holder)
 			}
 
 			override fun onError(e: Exception?) {
 				Picasso.get().load(backupURL).error(R.drawable.image_error).into(holder.nasaImage, object : Callback {
 					override fun onSuccess() {
-						nasaImageList[position].setImage(holder.nasaImage.drawable)
+						nasaImages[position].images[0].srcImage = holder.nasaImage.drawable
 						changeVisibility(View.VISIBLE, holder)
 					}
 
@@ -113,8 +117,8 @@ class ImageAdapter(
 		return stringArray?.get(0)
 	}
 
-	private fun changeVisibility(visibility: Int, holder: ViewHolder){
-		when (visibility){
+	private fun changeVisibility(visibility: Int, holder: ViewHolder) {
+		when (visibility) {
 			View.INVISIBLE -> {
 				holder.nasaImage.visibility = View.INVISIBLE
 				holder.spinningLoader.visibility = View.VISIBLE
@@ -125,6 +129,11 @@ class ImageAdapter(
 				holder.spinningLoader.visibility = View.INVISIBLE
 			}
 		}
+	}
+
+	private fun adjustURL(inputString: String): String {
+		val urlSplit = inputString.split("thumb").toTypedArray()
+		return urlSplit[0] + "large.jpg"
 	}
 
 }

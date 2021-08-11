@@ -3,7 +3,7 @@ package com.bronzeswordstudios.nasaimageviewer.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Datum {
+public class GeneralData {
 
 	@SerializedName("date_created")
 	@Expose
@@ -17,7 +17,7 @@ public class Datum {
 
 
 
-	public Datum (String dateCreated, String center, String title) {
+	public GeneralData (String dateCreated, String center, String title) {
 		this.dateCreated = dateCreated;
 		this.center = center;
 		this.title = title;

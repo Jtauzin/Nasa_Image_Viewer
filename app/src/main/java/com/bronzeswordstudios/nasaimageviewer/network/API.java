@@ -11,8 +11,9 @@ import retrofit2.http.Query;
 
 public interface API {
 
-	ArrayList<String> queryList = new ArrayList<String>(Arrays.asList(
-			"galaxy", "solar", "asteroid", "UFO", "moon", "mars rover", "mercury", "venus", "earth", "mars", "jupiter", "saturn", "uranus", "neptune",
+	ArrayList<String> queryList = new ArrayList<>(Arrays.asList(
+			"galaxy", "solar", "asteroid", "UFO", "moon", "mars rover", "mercury", "venus", "earth", "mars", "jupiter", "saturn", "uranus",
+			"neptune",
 			"pluto"
 	));
 
