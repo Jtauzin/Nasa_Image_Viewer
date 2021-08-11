@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity(),
 		imageRecyclerView.layoutManager = LinearLayoutManager(this)
 
 		// if we still have values in our image list, we need to go ahead and load it here in case connection is restored later while in use
-		if (imageList.size != 0) {
+		if (imageList.isNotEmpty()) {
 			// for screen rotation, on create is called again so we set the adapter to the
 			// prev. values
 			imageAdapter = ImageAdapter(imageList)
@@ -104,7 +104,7 @@ class MainActivity : AppCompatActivity(),
 		connectivityManager.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
 			override fun onAvailable(network: Network) {
 				runOnUiThread(Runnable {
-					if (imageList.size == 0) {
+					if (imageList.isEmpty()) {
 						// delay here for change in connectivity. When connection reestablished it can take a second
 						// to have access to that new connection even though it has been detected.
 						Thread.sleep(1000)
@@ -117,13 +117,13 @@ class MainActivity : AppCompatActivity(),
 			override fun onLost(network: Network) {
 				runOnUiThread(Runnable {
 					createSnackBar(R.string.connection_lost)
-					if (imageList.size == 0) {
+					if (imageList.isEmpty()) {
 						adjustVisibility(ERROR)
 					}
 				})
 			}
 		})
-		if (imageList.size == 0) {
+		if (imageList.isEmpty()) {
 			callRetrofit()
 		}
 	}
@@ -206,21 +206,21 @@ class MainActivity : AppCompatActivity(),
 		val api: API = RetroFitClient.getRetrofitInstance().create(API::class.java)
 		var call: Call<DataResult>? = null
 		when (index) {
-			0 -> call = api.variety0
-			1 -> call = api.variety1
-			2 -> call = api.variety2
-			3 -> call = api.variety3
-			4 -> call = api.variety4
-			5 -> call = api.variety5
-			6 -> call = api.variety6
-			7 -> call = api.variety7
-			8 -> call = api.variety8
-			9 -> call = api.variety9
-			10 -> call = api.variety10
-			11 -> call = api.variety11
-			12 -> call = api.variety12
-			13 -> call = api.variety13
-			14 -> call = api.variety14
+			0 -> call = api.getSearch(API.queryList[0])
+			1 -> call = api.getSearch(API.queryList[1])
+			2 -> call = api.getSearch(API.queryList[2])
+			3 -> call = api.getSearch(API.queryList[3])
+			4 -> call = api.getSearch(API.queryList[4])
+			5 -> call = api.getSearch(API.queryList[5])
+			6 -> call = api.getSearch(API.queryList[6])
+			7 -> call = api.getSearch(API.queryList[7])
+			8 -> call = api.getSearch(API.queryList[8])
+			9 -> call = api.getSearch(API.queryList[9])
+			10 -> call = api.getSearch(API.queryList[10])
+			11 -> call = api.getSearch(API.queryList[11])
+			12 -> call = api.getSearch(API.queryList[12])
+			13 -> call = api.getSearch(API.queryList[13])
+			14 -> call = api.getSearch(API.queryList[14])
 		}
 
 		call?.enqueue(object : Callback<DataResult> {
@@ -245,13 +245,13 @@ class MainActivity : AppCompatActivity(),
 		}
 		val api: API = RetroFitClient.getRetrofitInstance().create(API::class.java)
 		var call: Call<DataResult>? = null
-		call = api.getSearch(query, "image")
+		call = api.getSearch(query)
 		isSearch = false
 
 		call?.enqueue(object : Callback<DataResult> {
 			override fun onResponse(p0: Call<DataResult>, p1: Response<DataResult>) {
 				imageList = p1.body()!!.nasaImages
-				if (imageList.size == 0) {
+				if (imageList.isEmpty()) {
 					createSnackBar(R.string.no_results)
 					return
 				}
