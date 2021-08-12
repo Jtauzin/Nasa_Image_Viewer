@@ -11,8 +11,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class RetroFitClient {
 
 	OkHttpClient client;
-	private static Retrofit retrofit;
-	private static final String BASE_URL = "https://images-api.nasa.gov/";
+	private Retrofit retrofit;
 
 
 
@@ -26,6 +25,7 @@ public class RetroFitClient {
 
 	public Retrofit getRetrofitInstance () {
 		if (retrofit == null) {
+			final String BASE_URL = "https://images-api.nasa.gov/";
 			retrofit = new retrofit2.Retrofit.Builder()
 					.baseUrl(BASE_URL)
 					.addConverterFactory(GsonConverterFactory.create())
