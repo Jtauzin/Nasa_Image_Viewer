@@ -79,9 +79,11 @@ class MainActivity : AppCompatActivity(),
 		val layoutRefresher: SwipeRefreshLayout = findViewById(R.id.swipe_refresh)
 		layoutRefresher.setOnRefreshListener {
 			// call restart loader and cease refreshing indicator
-			index += 1
-			if (index == 15) {
-				index = 0
+			if (hasConnectivity()){
+				index += 1
+				if (index == 15) {
+					index = 0
+				}
 			}
 			callRetrofit()
 			layoutRefresher.isRefreshing = false
@@ -123,9 +125,6 @@ class MainActivity : AppCompatActivity(),
 				})
 			}
 		})
-		if (nasaImages.isEmpty()) {
-			callRetrofit()
-		}
 	}
 
 	//--------------------------------------------------------------------------------------------//
@@ -283,6 +282,5 @@ class MainActivity : AppCompatActivity(),
 		super.onRestoreInstanceState(savedInstanceState)
 		index = savedInstanceState.getInt("index")
 	}
-
 
 }
