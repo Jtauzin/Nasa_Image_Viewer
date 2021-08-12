@@ -27,6 +27,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+
 class MainActivity : AppCompatActivity(),
 	SearchFragment.SearchDialogListener {
 
@@ -39,6 +40,7 @@ class MainActivity : AppCompatActivity(),
 	private val ERROR = 8140146
 	private var index = 0
 	private lateinit var connectivityManager: ConnectivityManager
+	private lateinit var retroFitClient: RetroFitClient
 
 	// Using this as a static object allows us to retain the values through a screen orientation
 	// change
@@ -57,7 +59,7 @@ class MainActivity : AppCompatActivity(),
 		primaryProgressBar = findViewById(R.id.primary_progress_bar)
 		errorView = findViewById(R.id.error_view)
 		mLoaderManager = LoaderManager.getInstance(this)
-
+		retroFitClient = RetroFitClient(applicationContext)
 		imageRecyclerView = findViewById(R.id.recycle_view)
 		imageRecyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -76,7 +78,6 @@ class MainActivity : AppCompatActivity(),
 		// set refresh layout logic
 		val layoutRefresher: SwipeRefreshLayout = findViewById(R.id.swipe_refresh)
 		layoutRefresher.setOnRefreshListener {
-
 			// call restart loader and cease refreshing indicator
 			index += 1
 			if (index == 15) {
@@ -136,7 +137,6 @@ class MainActivity : AppCompatActivity(),
 			R.id.search -> {
 				// display our dialog box
 				displaySearch()
-
 			}
 		}
 		return true
@@ -202,7 +202,7 @@ class MainActivity : AppCompatActivity(),
 
 	private fun callRetrofit() {
 		// retrofit implementation
-		val api: API = RetroFitClient.getRetrofitInstance().create(API::class.java)
+		val api: API = retroFitClient.retrofitInstance.create(API::class.java)
 		var call: Call<DataResult>? = null
 		when (index) {
 			0 -> call = api.getSearch(API.queryList[0])
@@ -247,7 +247,7 @@ class MainActivity : AppCompatActivity(),
 		if (query == "") {
 			return
 		}
-		val api: API = RetroFitClient.getRetrofitInstance().create(API::class.java)
+		val api: API = retroFitClient.retrofitInstance.create(API::class.java)
 		val call: Call<DataResult>? = api.getSearch(query)
 
 		call?.enqueue(object : Callback<DataResult> {

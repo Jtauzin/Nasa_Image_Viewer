@@ -18,4 +18,5 @@
     <string name="header_text">UNDER CONSTRUCTION</string>
     <string name="epic_api_menu">Switch to EPIC image</string>
     <string name="search_api_menu">Switch to Bulk Image</string>
+    <string name="monitor_menu">[Placeholder]</string>
 </resources>

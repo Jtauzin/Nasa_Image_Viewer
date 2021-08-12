@@ -8,13 +8,9 @@
             android:icon="@drawable/search_icon"
             android:title="@string/search_db" />
         <item
-            android:id="@+id/search_api"
-            android:icon="@drawable/search_api_icon"
-            android:title="@string/search_api_menu" />
-        <item
-            android:id="@+id/epic_api"
-            android:icon="@drawable/epic_api_icon"
-            android:title="@string/epic_api_menu" />
+            android:id="@+id/http_icon"
+            android:icon="@drawable/http_icon"
+            android:title="@string/monitor_menu" />
 
     </group>
 </menu>
