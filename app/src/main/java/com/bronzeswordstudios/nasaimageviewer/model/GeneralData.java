@@ -14,6 +14,9 @@ public class GeneralData {
 	@SerializedName("title")
 	@Expose
 	private String title;
+	@SerializedName("description")
+	@Expose
+	private String description;
 
 
 
@@ -58,4 +61,12 @@ public class GeneralData {
 	public void setTitle (String title) {
 		this.title = title;
 	}
+
+
+
+	public String getDescription () { return description; }
+
+
+
+	public void setDescription (final String description) { this.description = description; }
 }

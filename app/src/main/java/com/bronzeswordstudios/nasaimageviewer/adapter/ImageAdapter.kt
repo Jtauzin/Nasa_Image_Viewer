@@ -4,10 +4,10 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bronzeswordstudios.nasaimageviewer.R
 import com.bronzeswordstudios.nasaimageviewer.model.NasaImage
+import com.google.android.material.textview.MaterialTextView
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 
@@ -29,6 +29,7 @@ class ImageAdapter(
 		val inflater: LayoutInflater = LayoutInflater.from(context)
 		val imageView = inflater.inflate(R.layout.adapter_view, parent, false)
 		parentView = imageView
+
 		return ViewHolder(imageView)
 	}
 
@@ -46,11 +47,10 @@ class ImageAdapter(
 		val url = imageData.href
 
 		// set attributes
-		val titleView: TextView = holder.titleView
-		val dateView: TextView = holder.dateView
-		val authorView: TextView = holder.authorView
-		val authorText: String =
-			context.resources.getString(R.string.author) + " " + genData.center
+		val titleView: MaterialTextView = holder.titleView
+		val dateView: MaterialTextView = holder.dateView
+		val authorView: MaterialTextView = holder.authorView
+		val authorText: String = context.resources.getString(R.string.author) + " " + genData.center
 		titleView.text = genData.title
 		dateView.text = extractDate(genData.dateCreated)
 		authorView.text = authorText
@@ -62,7 +62,6 @@ class ImageAdapter(
 			holder.nasaImage.setImageDrawable(imageData.srcImage)
 			changeVisibility(View.VISIBLE, holder)
 		}
-
 	}
 
 	/* getItemID and getItemViewType overrides correct an issue with fast scrolling on recycler view.
