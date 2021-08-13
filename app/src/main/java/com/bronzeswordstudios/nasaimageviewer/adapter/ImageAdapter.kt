@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isEmpty
 import androidx.core.view.size
 import androidx.recyclerview.widget.RecyclerView
 import com.bronzeswordstudios.nasaimageviewer.R
@@ -71,7 +72,7 @@ class ImageAdapter(
 		} else {
 			holder.nasaImage.setImageDrawable(imageData.srcImage)
 			changeVisibility(View.VISIBLE, holder)
-			if (!imageData.imageLabels.isNullOrEmpty() && holder.chipGroup.size == 0) {
+			if (!imageData.imageLabels.isNullOrEmpty() && holder.chipGroup.isEmpty()) {
 				setChips(imageData.imageLabels, holder)
 			}
 		}
