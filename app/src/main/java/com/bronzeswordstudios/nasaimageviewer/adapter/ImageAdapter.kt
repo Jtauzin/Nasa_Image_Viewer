@@ -163,7 +163,6 @@ class ImageAdapter(
 
 	private fun setChips(labels: MutableList<ImageLabel>, holder: ViewHolder) {
 		if (labels.size > 0) {
-			//holder.chipGroup.removeAllViews()
 			Thread(Runnable {
 				for (label in labels) {
 					val chip = Chip(context)
