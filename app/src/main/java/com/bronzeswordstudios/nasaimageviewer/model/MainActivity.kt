@@ -211,7 +211,7 @@ class MainActivity : AppCompatActivity(),
 					return
 				}
 				nasaImages = p1.body()!!.collection.items as ArrayList<NasaImage>
-				imageAdapter = ImageAdapter(nasaImages)
+				imageAdapter = ImageAdapter(nasaImages, this@MainActivity)
 				imageRecyclerView.adapter = imageAdapter
 			}
 
@@ -239,7 +239,7 @@ class MainActivity : AppCompatActivity(),
 					return
 				}
 				nasaImages = p1.body()!!.collection.items as ArrayList<NasaImage>
-				imageAdapter = ImageAdapter(nasaImages)
+				imageAdapter = ImageAdapter(nasaImages, this@MainActivity)
 				imageRecyclerView.adapter = imageAdapter
 			}
 
@@ -273,7 +273,7 @@ class MainActivity : AppCompatActivity(),
 		if (nasaImages.isNotEmpty() && imageRecyclerView.adapter == null) {
 			// for screen rotation, on create is called again so we set the adapter to the
 			// prev. values
-			imageAdapter = ImageAdapter(nasaImages)
+			imageAdapter = ImageAdapter(nasaImages, this)
 			imageRecyclerView.adapter = imageAdapter
 			adjustVisibility(View.VISIBLE)
 		} else if (!hasConnectivity()) {

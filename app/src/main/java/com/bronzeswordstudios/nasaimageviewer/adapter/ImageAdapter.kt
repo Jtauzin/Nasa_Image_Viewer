@@ -1,23 +1,34 @@
 package com.bronzeswordstudios.nasaimageviewer.adapter
 
+import android.app.Activity
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.size
 import androidx.recyclerview.widget.RecyclerView
 import com.bronzeswordstudios.nasaimageviewer.R
+import com.bronzeswordstudios.nasaimageviewer.model.ImageData
 import com.bronzeswordstudios.nasaimageviewer.model.NasaImage
+import com.google.android.material.chip.Chip
 import com.google.android.material.textview.MaterialTextView
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.label.ImageLabel
+import com.google.mlkit.vision.label.ImageLabeling
+import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 
 class ImageAdapter(
-	private val nasaImages: ArrayList<NasaImage>
+	private val nasaImages: ArrayList<NasaImage>,
+	private val activity: Activity
 ) :
 	RecyclerView.Adapter<ViewHolder>() {
 
 	lateinit var context: Context
-	lateinit var parentView: View
 
 	//--------------------------------------------------------------------------------------------//
 	/* begin our override methods here*/
@@ -28,7 +39,6 @@ class ImageAdapter(
 		context = parent.context
 		val inflater: LayoutInflater = LayoutInflater.from(context)
 		val imageView = inflater.inflate(R.layout.adapter_view, parent, false)
-		parentView = imageView
 
 		return ViewHolder(imageView)
 	}
@@ -61,6 +71,9 @@ class ImageAdapter(
 		} else {
 			holder.nasaImage.setImageDrawable(imageData.srcImage)
 			changeVisibility(View.VISIBLE, holder)
+			if (!imageData.imageLabels.isNullOrEmpty() && holder.chipGroup.size == 0) {
+				setChips(imageData.imageLabels, holder)
+			}
 		}
 	}
 
@@ -83,18 +96,22 @@ class ImageAdapter(
 	private fun loadImage(holder: ViewHolder, url: String, backupURL: String, position: Int) {
 		// set up loading display
 		changeVisibility(View.INVISIBLE, holder)
-
+		val imageData = nasaImages[position].images[0]
 		// check if we need to load the drawable or pull from list
 		Picasso.get().load(url).error(R.drawable.image_error).into(holder.nasaImage, object : Callback {
 			override fun onSuccess() {
-				nasaImages[position].images[0].srcImage = holder.nasaImage.drawable
+				val image: Bitmap = (holder.nasaImage.drawable as BitmapDrawable).bitmap
+				getLabels(image, holder, imageData)
+				imageData.srcImage = holder.nasaImage.drawable
 				changeVisibility(View.VISIBLE, holder)
 			}
 
 			override fun onError(e: Exception?) {
 				Picasso.get().load(backupURL).error(R.drawable.image_error).into(holder.nasaImage, object : Callback {
 					override fun onSuccess() {
-						nasaImages[position].images[0].srcImage = holder.nasaImage.drawable
+						val image: Bitmap = (holder.nasaImage.drawable as BitmapDrawable).bitmap
+						getLabels(image, holder, imageData)
+						imageData.srcImage = holder.nasaImage.drawable
 						changeVisibility(View.VISIBLE, holder)
 					}
 
@@ -129,6 +146,34 @@ class ImageAdapter(
 	private fun adjustURL(inputString: String): String {
 		val urlSplit = inputString.split("thumb").toTypedArray()
 		return urlSplit[0] + "large.jpg"
+	}
+
+
+	private fun getLabels(image: Bitmap, holder: ViewHolder, imageData: ImageData) {
+		val inputImage: InputImage = InputImage.fromBitmap(image, 0)
+		val labeler = ImageLabeling.getClient(ImageLabelerOptions.DEFAULT_OPTIONS)
+		labeler.process(inputImage).addOnSuccessListener { labels ->
+			imageData.imageLabels = labels
+			setChips(labels, holder)
+		}
+			.addOnFailureListener { e ->
+				Log.e("ERROR LABEL: ", "getLabels: $e")
+			}
+	}
+
+	private fun setChips(labels: MutableList<ImageLabel>, holder: ViewHolder) {
+		if (labels.size > 0) {
+			//holder.chipGroup.removeAllViews()
+			Thread(Runnable {
+				for (label in labels) {
+					val chip = Chip(context)
+					chip.text = label.text
+					activity.runOnUiThread(Runnable {
+						holder.chipGroup.addView(chip)
+					})
+				}
+			}).start()
+		}
 	}
 
 }

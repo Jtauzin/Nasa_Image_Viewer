@@ -25,7 +25,7 @@
 
 		<RelativeLayout
 			android:layout_width="match_parent"
-			android:layout_height="300dp">
+			android:layout_height="wrap_content">
 
 			<ImageView
 				android:id="@+id/nasa_image"
@@ -33,6 +33,7 @@
 				android:layout_height="match_parent"
 				android:contentDescription="@string/image_content_desc"
 				android:scaleType="fitCenter"
+				android:adjustViewBounds="true"
 				android:visibility="invisible" />
 
 			<com.google.android.material.progressindicator.CircularProgressIndicator
@@ -44,6 +45,14 @@
 				android:visibility="visible" />
 
 		</RelativeLayout>
+
+		<com.google.android.material.chip.ChipGroup
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			style="@style/Widget.MaterialComponents.ChipGroup"
+			android:id="@+id/chip_group"
+			android:layout_marginStart="16dp"
+			android:layout_marginEnd="16dp"/>
 
 		<com.google.android.material.textview.MaterialTextView
 			android:id="@+id/center_view"

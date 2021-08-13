@@ -5,6 +5,7 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import androidx.recyclerview.widget.RecyclerView
 import com.bronzeswordstudios.nasaimageviewer.R
+import com.google.android.material.chip.ChipGroup
 import com.google.android.material.textview.MaterialTextView
 
 class ViewHolder(adapterView: View) : RecyclerView.ViewHolder(adapterView) {
@@ -14,4 +15,5 @@ class ViewHolder(adapterView: View) : RecyclerView.ViewHolder(adapterView) {
 	val nasaImage: ImageView = adapterView.findViewById(R.id.nasa_image)
 	val authorView: MaterialTextView = adapterView.findViewById(R.id.center_view)
 	val spinningLoader: ProgressBar = adapterView.findViewById(R.id.spinning_loader)
+	val chipGroup: ChipGroup = adapterView.findViewById(R.id.chip_group)
 }
