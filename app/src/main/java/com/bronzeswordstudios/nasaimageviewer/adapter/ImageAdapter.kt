@@ -2,6 +2,7 @@ package com.bronzeswordstudios.nasaimageviewer.adapter
 
 import android.app.Activity
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.util.Log
@@ -9,7 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isEmpty
-import androidx.core.view.size
+import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.RecyclerView
 import com.bronzeswordstudios.nasaimageviewer.R
 import com.bronzeswordstudios.nasaimageviewer.model.ImageData
@@ -72,8 +73,9 @@ class ImageAdapter(
 		} else {
 			holder.nasaImage.setImageDrawable(imageData.srcImage)
 			changeVisibility(View.VISIBLE, holder)
+			setPaletteToView(imageData.palette!!, holder)
 			if (!imageData.imageLabels.isNullOrEmpty() && holder.chipGroup.isEmpty()) {
-				setChips(imageData.imageLabels, holder)
+				setChips(imageData.imageLabels, holder, imageData.palette!!)
 			}
 		}
 	}
@@ -95,22 +97,26 @@ class ImageAdapter(
 	//--------------------------------------------------------------------------------------------//
 
 	private fun loadImage(holder: ViewHolder, url: String, backupURL: String, position: Int) {
-		// set up loading display
+		// Load the image, and the assets (such as palette and ML ID chips) that are associated
 		changeVisibility(View.INVISIBLE, holder)
 		val imageData = nasaImages[position].images[0]
-		// check if we need to load the drawable or pull from list
 		Picasso.get().load(url).error(R.drawable.image_error).into(holder.nasaImage, object : Callback {
 			override fun onSuccess() {
 				val image: Bitmap = (holder.nasaImage.drawable as BitmapDrawable).bitmap
+				imageData.palette = createPalette(image)
+				setPaletteToView(imageData.palette!!, holder)
 				getLabels(image, holder, imageData)
 				imageData.srcImage = holder.nasaImage.drawable
 				changeVisibility(View.VISIBLE, holder)
 			}
 
 			override fun onError(e: Exception?) {
+				// try to load the original URL if higher res fails
 				Picasso.get().load(backupURL).error(R.drawable.image_error).into(holder.nasaImage, object : Callback {
 					override fun onSuccess() {
 						val image: Bitmap = (holder.nasaImage.drawable as BitmapDrawable).bitmap
+						imageData.palette = createPalette(image)
+						setPaletteToView(imageData.palette!!, holder)
 						getLabels(image, holder, imageData)
 						imageData.srcImage = holder.nasaImage.drawable
 						changeVisibility(View.VISIBLE, holder)
@@ -131,6 +137,7 @@ class ImageAdapter(
 	}
 
 	private fun changeVisibility(visibility: Int, holder: ViewHolder) {
+		// swap UI visibility based on input
 		when (visibility) {
 			View.INVISIBLE -> {
 				holder.nasaImage.visibility = View.INVISIBLE
@@ -145,34 +152,63 @@ class ImageAdapter(
 	}
 
 	private fun adjustURL(inputString: String): String {
+		// manipulate URL to pull higher res picture if available
 		val urlSplit = inputString.split("thumb").toTypedArray()
 		return urlSplit[0] + "large.jpg"
 	}
 
 
 	private fun getLabels(image: Bitmap, holder: ViewHolder, imageData: ImageData) {
+		// extract labels from the image using the firebase ML functions
 		val inputImage: InputImage = InputImage.fromBitmap(image, 0)
 		val labeler = ImageLabeling.getClient(ImageLabelerOptions.DEFAULT_OPTIONS)
 		labeler.process(inputImage).addOnSuccessListener { labels ->
 			imageData.imageLabels = labels
-			setChips(labels, holder)
+			setChips(labels, holder, imageData.palette!!)
 		}
 			.addOnFailureListener { e ->
 				Log.e("ERROR LABEL: ", "getLabels: $e")
 			}
 	}
 
-	private fun setChips(labels: MutableList<ImageLabel>, holder: ViewHolder) {
+	private fun setChips(labels: MutableList<ImageLabel>, holder: ViewHolder, palette: Palette) {
+		// set the chip views with labels, if applicable
 		if (labels.size > 0) {
 			Thread(Runnable {
 				for (label in labels) {
 					val chip = Chip(context)
 					chip.text = label.text
+					if (palette.vibrantSwatch != null) {
+						chip.chipBackgroundColor = ColorStateList.valueOf(palette.vibrantSwatch!!.rgb)
+					}
 					activity.runOnUiThread(Runnable {
 						holder.chipGroup.addView(chip)
 					})
 				}
 			}).start()
+		}
+	}
+
+	fun createPalette(bitmap: Bitmap): Palette {
+		return Palette.from(bitmap).generate()
+	}
+
+	private fun setPaletteToView(palette: Palette, holder: ViewHolder) {
+		// Here we set up our color scheme of the card based on the palette pulled from the image
+		if (palette.darkMutedSwatch?.rgb != null) {
+			holder.titleView.setTextColor(palette.darkMutedSwatch!!.rgb)
+		}
+		if (palette.darkVibrantSwatch?.rgb != null) {
+			holder.authorView.setTextColor(palette.darkVibrantSwatch!!.rgb)
+			holder.dateView.setTextColor(palette.darkVibrantSwatch!!.rgb)
+		}
+		if (palette.dominantSwatch?.rgb != null) {
+			holder.chipGroup.setBackgroundColor(palette.dominantSwatch!!.rgb)
+		}
+		if (palette.lightVibrantSwatch?.rgb != null) {
+			holder.baseView.setBackgroundColor(palette.lightVibrantSwatch!!.rgb)
+		} else if (palette.lightMutedSwatch?.rgb != null) {
+			holder.baseView.setBackgroundColor(palette.lightMutedSwatch!!.rgb)
 		}
 	}
 

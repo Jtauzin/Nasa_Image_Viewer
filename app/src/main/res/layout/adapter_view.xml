@@ -51,8 +51,8 @@
 			android:layout_height="wrap_content"
 			style="@style/Widget.MaterialComponents.ChipGroup"
 			android:id="@+id/chip_group"
-			android:layout_marginStart="16dp"
-			android:layout_marginEnd="16dp"/>
+			android:paddingStart="16dp"
+			android:paddingEnd="16dp" />
 
 		<com.google.android.material.textview.MaterialTextView
 			android:id="@+id/center_view"

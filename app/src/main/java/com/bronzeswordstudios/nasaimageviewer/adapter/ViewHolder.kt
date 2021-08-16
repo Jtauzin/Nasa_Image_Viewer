@@ -2,6 +2,7 @@ package com.bronzeswordstudios.nasaimageviewer.adapter
 
 import android.view.View
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import androidx.recyclerview.widget.RecyclerView
 import com.bronzeswordstudios.nasaimageviewer.R
@@ -16,4 +17,5 @@ class ViewHolder(adapterView: View) : RecyclerView.ViewHolder(adapterView) {
 	val authorView: MaterialTextView = adapterView.findViewById(R.id.center_view)
 	val spinningLoader: ProgressBar = adapterView.findViewById(R.id.spinning_loader)
 	val chipGroup: ChipGroup = adapterView.findViewById(R.id.chip_group)
+	val baseView: LinearLayout = adapterView.findViewById(R.id.base_view)
 }
