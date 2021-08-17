@@ -1,16 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <group
-        android:id="@+id/nav_group"
-        android:checkableBehavior="single">
-        <item
-            android:id="@+id/search"
-            android:icon="@drawable/search_icon"
-            android:title="@string/search_db" />
-        <item
-            android:id="@+id/http_icon"
-            android:icon="@drawable/http_icon"
-            android:title="@string/monitor_menu" />
-
-    </group>
+	<group
+		android:id="@+id/nav_group"
+		android:checkableBehavior="single">
+		<item
+			android:id="@+id/search"
+			android:icon="@drawable/search_icon"
+			android:title="@string/search_db" />
+	</group>
 </menu>

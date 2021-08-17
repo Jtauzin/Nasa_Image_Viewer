@@ -15,7 +15,7 @@
     <string name="date">Date: </string>
     <string name="dismiss">Dismiss</string>
     <string name="header_title">Main Menu</string>
-    <string name="header_text">UNDER CONSTRUCTION</string>
+    <string name="header_text">Select an option below to get started!</string>
     <string name="epic_api_menu">Switch to EPIC image</string>
     <string name="search_api_menu">Switch to Bulk Image</string>
     <string name="monitor_menu">[Placeholder]</string>

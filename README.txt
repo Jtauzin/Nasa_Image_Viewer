@@ -1,34 +1,33 @@
-Hello and welcome to the Nasa Image Viewer application written in Kotlin!
+Hello and welcome to the Nasa Image Viewer application!
 
-This was a coding challenge, and submission is going through github. That being said, this was super
-fun to work on and I plan to keep this repository open. There is a lot of good information in it,
-specifically this repo contains code on generating images from an API (in this case the NASA API) in
-line with accompanying information such as title, author, and date. As well as countering some
-quirks that may be encountered on recycler view.
+Main Libraries used:
 
-I chose to do this in Kotlin since it is a newer language to me. I figured this would be good
-practice!
+* Retrofit
+* Picasso
+* Google ML Labeling API
+* Android X
+* Android Material Lib
+* LeakCanary
+* Chuck
 
-Guideline notes below:
+About this app:
 
-• All functionality is in the main activity as guidelines mention.
+The NASA Image Viewer application is just that, an application to view the image archives available from the NASA API. To get started,
+simply open the app on your device. It will launch and display the 1st preset image search.
 
-• Recycler view is used as requested.
+![Alt text](/screenshots/ss1.png?raw=true "Opening Screen")
 
-• Each image is contained within its own ViewHolder with additional information describing
-the image (a minimum of title, author, and date) is displayed.
+The user may cycle through these images, or load a new stream of images my scrolling to the top, and swiping down to refresh to load a new set of
+preselected images.
 
-• User may swipe down to refresh and cycle through from a series of queries.
+![Alt text](/screenshots/ss2.png?raw=true "Opening Screen")
 
-• If anything is seen in the app that is deemed against best practices please reach
-out! There is always room to grow :)
+Perhaps, however, you have a desire for images that have not been supplied in the presets. Well good news! You can use the handy dandy search feature
+to try and find the images you crave! Start by selecting the menu in the upper left hand corner.
 
-• As a bonus and just for kicks, a search feature was implemented. It can be accessed via the drop
-down in the top right corner of the screen. The app just didn't feel right without a search.
+![Alt text](/screenshots/ss3.png?raw=true "Opening Screen")
 
-I have plans to utilize the NASA EPIC api in this as well. That implementation is pending
+![Alt text](/screenshots/ss4.png?raw=true "Opening Screen")
 
 
-With love,
-
-James
+Happy Browsing!
