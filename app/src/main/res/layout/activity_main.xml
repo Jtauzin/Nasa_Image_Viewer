@@ -89,5 +89,5 @@
 		android:layout_gravity="start"
 		app:headerLayout="@layout/nav_header"
 		app:menu="@menu/menu"
-		app:itemTextColor="@color/design_default_color_primary_variant"/>
+		app:itemTextColor="@color/design_default_color_primary_variant" />
 </androidx.drawerlayout.widget.DrawerLayout>
