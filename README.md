@@ -27,6 +27,8 @@ to try and find the images you crave! Start by selecting the menu in the upper l
 
 ![Alt text](/screenshots/SS3.png?raw=true "Opening Screen")
 
+Enter your desired search and click submit to search or cancel to go back.
+
 ![Alt text](/screenshots/SS4.png?raw=true "Opening Screen")
 
 
