@@ -33,7 +33,7 @@ Enter your desired search and click submit to search or cancel to go back.
 
 Watch a demo here:
 
-![Alt text](/screenshots/demo.webm.mov?raw=true "Demo")
+![Alt text](/screenshots/demo.gif?raw=true "Demo")
 
 
 Happy Browsing!
