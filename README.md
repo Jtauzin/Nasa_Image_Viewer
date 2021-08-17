@@ -16,7 +16,7 @@ About this app:
 The NASA Image Viewer application is just that, an application to view the image archives available from the NASA API. To get started,
 simply open the app on your device. It will launch and display the 1st preset image search.
 
-![Alt text](/screenshots/SS1.png?raw=true "Opening Screen")
+![Alt text](/screenshots/SS1.png?raw=true&s=50 "Opening Screen")
 </p>
 
 <p>
