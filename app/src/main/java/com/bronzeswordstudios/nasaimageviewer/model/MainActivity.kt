@@ -27,6 +27,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+
 class MainActivity : AppCompatActivity(),
 	SearchFragment.SearchDialogListener {
 
@@ -39,12 +40,8 @@ class MainActivity : AppCompatActivity(),
 	private val ERROR = 8140146
 	private var index = 0
 	private lateinit var connectivityManager: ConnectivityManager
-
-	// Using this as a static object allows us to retain the values through a screen orientation
-	// change
-	companion object {
-		var nasaImages: ArrayList<NasaImage> = ArrayList()
-	}
+	private lateinit var retroFitClient: RetroFitClient
+	private var nasaImages: ArrayList<NasaImage> = ArrayList()
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -57,30 +54,19 @@ class MainActivity : AppCompatActivity(),
 		primaryProgressBar = findViewById(R.id.primary_progress_bar)
 		errorView = findViewById(R.id.error_view)
 		mLoaderManager = LoaderManager.getInstance(this)
-
+		retroFitClient = RetroFitClient(applicationContext)
 		imageRecyclerView = findViewById(R.id.recycle_view)
 		imageRecyclerView.layoutManager = LinearLayoutManager(this)
-
-		// if we still have values in our image list, we need to go ahead and load it here in case connection is restored later while in use
-		if (nasaImages.isNotEmpty()) {
-			// for screen rotation, on create is called again so we set the adapter to the
-			// prev. values
-			imageAdapter = ImageAdapter(nasaImages)
-			imageRecyclerView.adapter = imageAdapter
-			adjustVisibility(View.VISIBLE)
-		} else if (!hasConnectivity()) {
-			// check connectivity in case of rotation, we need to update screen if connection was lost
-			adjustVisibility(ERROR)
-		}
 
 		// set refresh layout logic
 		val layoutRefresher: SwipeRefreshLayout = findViewById(R.id.swipe_refresh)
 		layoutRefresher.setOnRefreshListener {
-
 			// call restart loader and cease refreshing indicator
-			index += 1
-			if (index == 15) {
-				index = 0
+			if (hasConnectivity()) {
+				index += 1
+				if (index == 15) {
+					index = 0
+				}
 			}
 			callRetrofit()
 			layoutRefresher.isRefreshing = false
@@ -122,9 +108,6 @@ class MainActivity : AppCompatActivity(),
 				})
 			}
 		})
-		if (nasaImages.isEmpty()) {
-			callRetrofit()
-		}
 	}
 
 	//--------------------------------------------------------------------------------------------//
@@ -136,7 +119,6 @@ class MainActivity : AppCompatActivity(),
 			R.id.search -> {
 				// display our dialog box
 				displaySearch()
-
 			}
 		}
 		return true
@@ -202,7 +184,7 @@ class MainActivity : AppCompatActivity(),
 
 	private fun callRetrofit() {
 		// retrofit implementation
-		val api: API = RetroFitClient.getRetrofitInstance().create(API::class.java)
+		val api: API = retroFitClient.retrofitInstance.create(API::class.java)
 		var call: Call<DataResult>? = null
 		when (index) {
 			0 -> call = api.getSearch(API.queryList[0])
@@ -229,7 +211,7 @@ class MainActivity : AppCompatActivity(),
 					return
 				}
 				nasaImages = p1.body()!!.collection.items as ArrayList<NasaImage>
-				imageAdapter = ImageAdapter(nasaImages)
+				imageAdapter = ImageAdapter(nasaImages, this@MainActivity)
 				imageRecyclerView.adapter = imageAdapter
 			}
 
@@ -247,7 +229,7 @@ class MainActivity : AppCompatActivity(),
 		if (query == "") {
 			return
 		}
-		val api: API = RetroFitClient.getRetrofitInstance().create(API::class.java)
+		val api: API = retroFitClient.retrofitInstance.create(API::class.java)
 		val call: Call<DataResult>? = api.getSearch(query)
 
 		call?.enqueue(object : Callback<DataResult> {
@@ -257,7 +239,7 @@ class MainActivity : AppCompatActivity(),
 					return
 				}
 				nasaImages = p1.body()!!.collection.items as ArrayList<NasaImage>
-				imageAdapter = ImageAdapter(nasaImages)
+				imageAdapter = ImageAdapter(nasaImages, this@MainActivity)
 				imageRecyclerView.adapter = imageAdapter
 			}
 
@@ -275,14 +257,30 @@ class MainActivity : AppCompatActivity(),
 	//--------------------------------------------------------------------------------------------//
 
 	override fun onSaveInstanceState(outState: Bundle) {
+		outState.putParcelableArrayList("list", nasaImages)
 		outState.putInt("index", index)
 		super.onSaveInstanceState(outState)
 	}
 
 	override fun onRestoreInstanceState(savedInstanceState: Bundle) {
 		super.onRestoreInstanceState(savedInstanceState)
+		// store data for reuse
 		index = savedInstanceState.getInt("index")
+		nasaImages = savedInstanceState.getParcelableArrayList<NasaImage>("list") as ArrayList<NasaImage>
 	}
 
+	override fun onResume() {
+		if (nasaImages.isNotEmpty() && imageRecyclerView.adapter == null) {
+			// for screen rotation, on create is called again so we set the adapter to the
+			// prev. values
+			imageAdapter = ImageAdapter(nasaImages, this)
+			imageRecyclerView.adapter = imageAdapter
+			adjustVisibility(View.VISIBLE)
+		} else if (!hasConnectivity()) {
+			// check connectivity in case of rotation, we need to update screen if connection was lost
+			adjustVisibility(ERROR)
+		}
+		super.onResume()
+	}
 
 }

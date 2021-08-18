@@ -7,13 +7,13 @@
 	android:paddingStart="24dp"
 	android:paddingEnd="24dp">
 
-	<EditText
+	<com.google.android.material.textfield.TextInputEditText
 		android:id="@+id/search_input"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:hint="@string/search_hint"
 		android:inputType="text"
 		android:textColorHint="#D3D3D3"
-		android:textSize="16sp"/>
+		android:textSize="16sp" />
 
 </LinearLayout>

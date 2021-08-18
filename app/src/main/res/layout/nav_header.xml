@@ -6,7 +6,7 @@
 	android:fitsSystemWindows="true"
 	android:orientation="vertical">
 
-	<TextView
+	<com.google.android.material.textview.MaterialTextView
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_marginStart="24dp"
@@ -14,9 +14,10 @@
 		android:layout_marginEnd="24dp"
 		android:text="@string/header_title"
 		android:textAppearance="?attr/textAppearanceHeadline6"
-		android:textSize="20sp" />
+		android:textSize="20sp"
+		android:textColor="@color/design_default_color_primary_dark" />
 
-	<TextView
+	<com.google.android.material.textview.MaterialTextView
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_marginStart="24dp"
@@ -24,7 +25,12 @@
 		android:layout_marginBottom="24dp"
 		android:text="@string/header_text"
 		android:textAppearance="?attr/textAppearanceBody2"
-		android:textColor="@color/material_on_surface_emphasis_medium"
+		android:textColor="@color/design_default_color_primary"
 		android:textSize="14sp" />
+
+	<View
+		android:layout_width="match_parent"
+		android:layout_height="1dp"
+		android:background="#eae8e4" />
 
 </LinearLayout>

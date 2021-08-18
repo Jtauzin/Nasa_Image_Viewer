@@ -1,11 +1,14 @@
 package com.bronzeswordstudios.nasaimageviewer.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-public class NasaImage {
+public class NasaImage implements Parcelable {
 
 	@SerializedName("href")
 	@Expose
@@ -27,6 +30,28 @@ public class NasaImage {
 		this.data = data;
 		this.imageData = imageData;
 	}
+
+
+
+	protected NasaImage (Parcel in) {
+		href = in.readString();
+	}
+
+
+
+	public static final Creator<NasaImage> CREATOR = new Creator<NasaImage>() {
+		@Override
+		public NasaImage createFromParcel (Parcel in) {
+			return new NasaImage(in);
+		}
+
+
+
+		@Override
+		public NasaImage[] newArray (int size) {
+			return new NasaImage[size];
+		}
+	};
 
 
 
@@ -64,4 +89,17 @@ public class NasaImage {
 		this.imageData = imageData;
 	}
 
+
+
+	@Override
+	public int describeContents () {
+		return 0;
+	}
+
+
+
+	@Override
+	public void writeToParcel (final Parcel parcel, final int i) {
+		parcel.writeString(href);
+	}
 }
