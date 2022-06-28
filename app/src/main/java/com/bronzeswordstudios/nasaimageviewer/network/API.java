@@ -1,6 +1,6 @@
 package com.bronzeswordstudios.nasaimageviewer.network;
 
-import com.bronzeswordstudios.nasaimageviewer.model.DataResult;
+import com.bronzeswordstudios.nasaimageviewer.network.model.DataResult;
 
 import java.util.ArrayList;
 import java.util.Arrays;

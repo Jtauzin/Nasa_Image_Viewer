@@ -20,6 +20,8 @@ import com.bronzeswordstudios.nasaimageviewer.R
 import com.bronzeswordstudios.nasaimageviewer.adapter.ImageAdapter
 import com.bronzeswordstudios.nasaimageviewer.network.API
 import com.bronzeswordstudios.nasaimageviewer.network.RetroFitClient
+import com.bronzeswordstudios.nasaimageviewer.network.model.DataResult
+import com.bronzeswordstudios.nasaimageviewer.network.model.NasaImage
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar

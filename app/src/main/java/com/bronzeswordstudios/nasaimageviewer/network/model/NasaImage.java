@@ -1,4 +1,4 @@
-package com.bronzeswordstudios.nasaimageviewer.model;
+package com.bronzeswordstudios.nasaimageviewer.network.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;

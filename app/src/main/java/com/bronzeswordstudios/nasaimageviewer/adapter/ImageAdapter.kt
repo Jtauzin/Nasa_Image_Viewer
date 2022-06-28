@@ -13,8 +13,8 @@ import androidx.core.view.isEmpty
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.RecyclerView
 import com.bronzeswordstudios.nasaimageviewer.R
-import com.bronzeswordstudios.nasaimageviewer.model.ImageData
-import com.bronzeswordstudios.nasaimageviewer.model.NasaImage
+import com.bronzeswordstudios.nasaimageviewer.network.model.ImageData
+import com.bronzeswordstudios.nasaimageviewer.network.model.NasaImage
 import com.google.android.material.chip.Chip
 import com.google.android.material.textview.MaterialTextView
 import com.google.mlkit.vision.common.InputImage
